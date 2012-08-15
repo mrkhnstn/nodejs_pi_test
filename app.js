@@ -30,6 +30,10 @@ app.configure('development', function(){
 
 //app.get('/', routes.index);
 
+app.get('/', function(req, res){
+  res.send('RPi says hello :)');
+});
+
 ////////////////////////////////////////////////////////////////////////////
 // GPIO
 ////////////////////////////////////////////////////////////////////////////
@@ -63,44 +67,18 @@ for(var i=0; i<gpioPinIds.length; i++){
 	});
 }
 
-app.get('/', function(req, res){
-  res.send('RPi says hello :)');
-});
-
 // output all gpios including directions and values
 app.get('/gpio', function(req,res){
-	var s = "";
+	var a = [];
 	for(var i=0; i<gpios.length; i++){
 		var g = gpios[i];
 		if(g)
-			s += g.headerNum + " | " +g.direction + " | " + g.value + "<br>"; 
+			a.push([g.headerNum,g.direction,g.value]);
 	}
-	res.send(s);
+	res.send(a);
 });
 
-// set gpio pin to input
-app.get('/gpio/in/:pin', function(req,res){
-	var pin = Number(req.params.pin);
-	if(gpioPinIds.indexOf(pin) == -1){
-		res.send('Error: pin' + req.params.pin + ' does not exist.');
-		return;
-	} else {
-		gpios[pin].setDirection('in');
-		res.send('OK');
-	}
-});
 
-// set gpio pin to output
-app.get('/gpio/out/:pin', function(req,res){
-var pin = Number(req.params.pin);
-	if(gpioPinIds.indexOf(pin) == -1){
-		res.send('Error: pin' + req.params.pin + ' does not exist.');
-		return;
-	} else {
-		gpios[pin].setDirection('out');
-		res.send('OK');
-	}
-});
 
 // get value of gpio pin
 app.get('/gpio/:pin', function(req, res){
@@ -115,22 +93,34 @@ app.get('/gpio/:pin', function(req, res){
 });
 
 // set value of gpio pin
-var booleanStrings = ["0","1"];
 app.get('/gpio/:pin/:value', function(req, res){
 	var pin = Number(req.params.pin);
-	var val = req.params.value;
+
 	if(gpioPinIds.indexOf(pin) == -1){
 		res.send('Error: pin' + req.params.pin + ' does not exist.');
 		return;
-	} else if(booleanStrings.indexOf(val) == -1){
-		res.send('Error: value has to be 1 or 0');
-		return;
-  	} else {
-  		if(val == "1")
-  			gpios[pin].set(1);
-  		else
-  			gpios[pin].set(0);
-  		res.send('OK');
+	} else {
+		var g = gpios[pin];
+		switch(req.params.value){
+			case "1":
+				g.set(1);
+				res.json([g.headerNum,g.direction,g.value]);
+				break;
+			case "0":
+				g.set(0);
+				res.json([g.headerNum,g.direction,g.value]);
+				break;
+			case "in":
+				g.setDirection('in');
+				res.json([g.headerNum,g.direction,g.value]);
+				break;
+			case "out":
+				g.setDirection('out');
+				res.json([g.headerNum,g.direction,g.value]);
+				break;
+			default:
+				res.send('Error: value has to be 1,0,in or out');
+		}
   	}
 });
 
