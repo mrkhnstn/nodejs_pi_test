@@ -38,6 +38,7 @@ var gpio = require("gpio");
 
 // available pins
 var gpioPinIds = [14,15,18,23,24,25,8,7,0,1,4,17,21,22,10,9,11];
+//var gpioPinIds = [0];
 var gpios = [];
 
 // setup all available gpios
@@ -48,7 +49,7 @@ for(var i=0; i<gpioPinIds.length; i++){
 		var a = id;
 		return function(){
 			console.log("pin " + a + " ready");
-			
+			gpios[a].set(0);
 			gpios[a].on("change",function(val){
 				console.log("pin " + a + " changed to " + val);
 			});
@@ -66,7 +67,7 @@ app.get('/', function(req, res){
   res.send('RPi says hello :)');
 });
 
-// get gpios
+// output all gpios including directions and values
 app.get('/gpio', function(req,res){
 	var s = "";
 	for(var i=0; i<gpios.length; i++){
