@@ -1,0 +1,86 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>RPi GPIO</title>
+        <script src="javascripts/jquery-1.7.1.min.js"></script>
+         <!--script src="host.js"></script-->
+        <script>
+            $(function() {
+				console.log("GPIO");
+				$.get('gpio',function(data){
+					console.log(data);
+					for(var i=0; i<data.length; i++){
+						var d = data[i];
+						/*
+						$('<div></div>')
+            			.appendTo($('body'))
+            			.append(d[0]+'|'+d[1]+'|'+d[2]);
+            			*/
+            			
+            			var g = {
+            				id: d[0],
+            				div : $('<div></div>'),
+            				label : $('<span></span>'),
+            				inOutSelect : $('<select></select>'),
+            				valCheckbox : $('<input type="checkbox"></checkbox>')
+            			};
+            			
+            			$('body').append(g.div);
+            			g.div.append(g.label);
+            			g.label.html(d[0]);
+            			
+            			g.div.append(g.inOutSelect);
+            			g.inOutSelect.append('<option value="in">in</option>');
+            			g.inOutSelect.append('<option value="out">out</option>');
+            			
+            			function createSelectFunction(){
+            				var a = g;
+            				return function(){
+            					console.log(a.inOutSelect.val());
+            				};
+            			}
+            			g.inOutSelect.change(createSelectFunction());
+            			g.inOutSelect.val(d[1]);
+            			
+            			g.div.append(g.valCheckbox);
+            			
+            			function createCheckboxFunction(){
+            				var a = g;
+            				return function(){
+            					console.log(a.inOutSelect.val());
+            					var checked = a.valCheckbox.attr('checked');
+            					if(checked){
+            						$.get('gpio/'+a.id+'/1',function(data){
+            							console.log(data);
+            						});
+            						//console.log("yup");
+            					} else {
+            						$.get('gpio/'+a.id+'/0',function(data){
+            							console.log(data);
+            						});
+            						//console.log("nope");
+            					}
+            				};
+            			}
+            			g.valCheckbox.attr('checked',d[2] == 1);
+            			g.valCheckbox.change(createCheckboxFunction());
+					}
+				});
+            });
+        </script> 
+        <style>
+        	body {
+        		padding: 10px;
+        	}
+        	button {
+        		width: 200px;
+        		height: 25px;
+        		margin: 5px;
+        	}
+        </style>
+    </head>
+    <body>
+    </body>
+</html>
