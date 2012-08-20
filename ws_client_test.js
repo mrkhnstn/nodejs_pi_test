@@ -1,5 +1,5 @@
 var WebSocket = require('ws')
-  , ws = new WebSocket('ws://127.0.0.1:8080');
+  , ws = new WebSocket('ws://5.157.248.122:80');
 ws.on('open', function() {
     ws.send('something');
 });
