@@ -141,6 +141,13 @@ server.listen(app.get('port'), function(){
 
 var io = require('socket.io').listen(server);
 
+io.set('transports', [
+    'websocket'
+  , 'htmlfile'
+  , 'xhr-polling'
+  , 'jsonp-polling'
+  ]);
+
 io.sockets.on('connection', function (socket) {
   socket.emit('news', { hello: 'world' });
   socket.on('my other event', function (data) {
