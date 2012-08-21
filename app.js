@@ -192,10 +192,10 @@ io.sockets.on('connection', function (socket) {
   				if(g.direction == "out"){
   					g.set(data.val);
   				}
-  				io.sockets.emit("gpio",getGPIO());
+  				//io.sockets.emit("gpio",getGPIO());
   			} catch(e) {
-  				console.log(e);
-  				io.sockets.emit("gpio",getGPIO());
+  				console.error(e);
+  				//io.sockets.emit("gpio",getGPIO());
   			}
   		}
   	});
