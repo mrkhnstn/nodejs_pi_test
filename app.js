@@ -58,8 +58,9 @@ for(var i=0; i<gpioPinIds.length; i++){
 			gpios[a].set(0);
 			gpios[a].on("change",function(val){
 				console.log("pin " + a + " changed to " + val);
+				if(io)
+					io.sockets.emit(getGPIO());
 			});
-			console.log();
 		}
 	}
 	
@@ -148,9 +149,48 @@ io.set('transports', [
   , 'jsonp-polling'
   ]);
 
+function getGPIO(){
+	var a = [];
+		for(var i=0; i<gpios.length; i++){
+			var g = gpios[i];
+			if(g)
+				a.push({
+					pin:g.headerNum,
+					dir:g.direction,
+					val:g.value
+					});
+		}
+	
+	return a;
+}
+
 io.sockets.on('connection', function (socket) {
-  socket.emit('news', { hello: 'world' });
-  socket.on('my other event', function (data) {
-    console.log(data);
-  });
+
+  	socket.emit('news', { hello: 'world' });
+
+  	socket.on('my other event', function (data) {
+    	console.log(data);
+  	});
+
+	//
+
+	socket.emit("gpio",getGPIO());
+  
+  	socket.on('gpio',function(data){
+  		console.log("gpio:"+data.toString());
+  		//sendGPIO();
+  		var pin = Number(data.pin);
+  		if(gpioPinIds.indexOf(pin) == -1){
+  			try {
+  				var g = gpios[data.pin];
+  				g.setDirection(data.dir);
+  				g.set(data.val);
+  				io.sockets.emit("gpio",getGPIO());
+  			} catch(e) {
+  				console.log(e);
+  				io.sockets.emit("gpio",getGPIO());
+  			}
+  		}
+  	});
+
 });

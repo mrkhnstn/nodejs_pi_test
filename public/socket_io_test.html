@@ -9,7 +9,7 @@
          <!--script src="host.js"></script-->
         <script>
             $(function() {
-				var socket = io.connect('http://5.126.169.11');
+				var socket = io.connect('http://'+window.location.host);
 				socket.on('news', function (data) {
 					console.log(data);
 					socket.emit('my other event', { my: 'data' });
