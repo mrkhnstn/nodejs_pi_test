@@ -58,11 +58,12 @@
 				}
 				
 				function sendGPIO(a){
-					socket.emit("gpio",{pin:a.id,dir:a.inOutSelect.val(),val:a.valCheckbox.attr('checked') == 'checked' ? 1 : 0});
+					var g = {pin:a.id,dir:a.inOutSelect.val(),val:a.valCheckbox.attr('checked') == 'checked' ? 1 : 0};
+					socket.emit("gpio",g);
 				}
 				
 				// setup socket
-				var socket = io.connect('http://'+window.location.host);
+				var socket = io.connect('http://'+window.location.host+'/browser');
 				
 				socket.on('gpio', function (data) {
 					console.log("gpio");

@@ -60,6 +60,7 @@ for(var i=0; i<gpioPinIds.length; i++){
 				console.log("pin " + a + " changed to " + val);
 				try{
 					io.sockets.emit('gpio',getGPIO());
+					client_socket.emit('gpio',getGPIO());
 				} catch(e) {
 					console.error(e);
 				}
@@ -71,6 +72,21 @@ for(var i=0; i<gpioPinIds.length; i++){
 		direction: 'out',	
 		ready: f()
 	});
+}
+
+function getGPIO(){
+	var a = [];
+		for(var i=0; i<gpios.length; i++){
+			var g = gpios[i];
+			if(g)
+				a.push({
+					pin:g.headerNum,
+					dir:g.direction,
+					val:g.value
+					});
+		}
+	
+	return a;
 }
 
 // output all gpios including directions and values
@@ -152,20 +168,7 @@ io.set('transports', [
   , 'jsonp-polling'
   ]);
 
-function getGPIO(){
-	var a = [];
-		for(var i=0; i<gpios.length; i++){
-			var g = gpios[i];
-			if(g)
-				a.push({
-					pin:g.headerNum,
-					dir:g.direction,
-					val:g.value
-					});
-		}
-	
-	return a;
-}
+
 
 io.sockets.on('connection', function (socket) {
 
@@ -175,7 +178,8 @@ io.sockets.on('connection', function (socket) {
     	console.log(data);
   	});
 
-	//
+	/////////////////////////////////////////////////////////////
+	// GPIO socket.io experiment
 
 	socket.emit("gpio",getGPIO());
   
@@ -202,5 +206,37 @@ io.sockets.on('connection', function (socket) {
   			}
   		}
   	});
+  	
+  	//	
+  	/////////////////////////////////////////////////////////////
 
+});
+
+
+var io_client = require( 'socket.io-client' );
+var client_socket = io_client.connect( "http://5.157.248.122:3333/pi");
+
+client_socket.on('get_gpio', function (data) {
+	client_socket.emit('gpio',getGPIO());
+});
+
+client_socket.on('gpio', function (data) {
+	console.log("gpio:"+data.toString());
+	var pin = Number(data.pin);
+	console.log(gpioPinIds);
+	console.log(pin);
+	if(gpioPinIds.indexOf(pin) != -1){
+		try {
+			var g = gpios[data.pin];
+			console.log(g);
+			if(g.direction != data.dir){
+				g.setDirection(data.dir);
+			}
+			if(g.direction == "out"){
+				g.set(data.val);
+			}
+		} catch(e) {
+			console.error(e);
+		}
+	}
 });
