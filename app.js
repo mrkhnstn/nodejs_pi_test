@@ -58,8 +58,11 @@ for(var i=0; i<gpioPinIds.length; i++){
 			gpios[a].set(0);
 			gpios[a].on("change",function(val){
 				console.log("pin " + a + " changed to " + val);
-				if(io)
-					io.sockets.emit(getGPIO());
+				try{
+					io.sockets.emit('gpio',getGPIO());
+				} catch(e) {
+					console.error(e);
+				}
 			});
 		}
 	}
