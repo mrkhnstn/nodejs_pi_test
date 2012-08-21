@@ -180,6 +180,8 @@ io.sockets.on('connection', function (socket) {
   		console.log("gpio:"+data.toString());
   		//sendGPIO();
   		var pin = Number(data.pin);
+		console.log(gpioPinIds);
+		console.log(pin);
   		if(gpioPinIds.indexOf(pin) != -1){
   			try {
   				var g = gpios[data.pin];
