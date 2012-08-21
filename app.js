@@ -179,10 +179,11 @@ io.sockets.on('connection', function (socket) {
   	socket.on('gpio',function(data){
   		console.log("gpio:"+data.toString());
   		//sendGPIO();
-  		var pin = Number(data.pin);
-  		if(gpioPinIds.indexOf(pin) == -1){
+  		//var pin = Number(data.pin);
+  		if(gpioPinIds.indexOf(data.pin) != -1){
   			try {
   				var g = gpios[data.pin];
+  				console.log(g);
   				g.setDirection(data.dir);
   				g.set(data.val);
   				io.sockets.emit("gpio",getGPIO());
