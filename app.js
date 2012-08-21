@@ -184,8 +184,12 @@ io.sockets.on('connection', function (socket) {
   			try {
   				var g = gpios[data.pin];
   				console.log(g);
-  				g.setDirection(data.dir);
-  				g.set(data.val);
+  				if(g.direction != data.dir){
+  					g.setDirection(data.dir);
+  				}
+  				if(g.direction == "out"){
+  					g.set(data.val);
+  				}
   				io.sockets.emit("gpio",getGPIO());
   			} catch(e) {
   				console.log(e);
