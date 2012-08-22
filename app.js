@@ -291,11 +291,8 @@ client_socket.on('get', function(data){
 client_socket.on('msg', function(data){
 	console.log('msg: ' + data.key + ' > ' + data.value);
 	if(data.key == 'myDevice:gpio:1:value'){ //check with regex
-		var newValue = b;
 		// pin id should be extracted with regex
-		if(newValue != gpio[1].value){
-			gpio[1].set(Number(data.value));
-		}
+		gpio[1].set(Number(data.value));
 	}
 });
 
