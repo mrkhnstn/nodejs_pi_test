@@ -53,81 +53,7 @@ io.configure(function () {
 	io.disable('log');
 });
 
-//
-
-var browserSockets = io.of('/browser').on('connection', function (socket) {
-  
-  	///////////////////////////////////////////////////////////
-	// redis related
-	var pubClient = redis.createClient();
-	var subClient = redis.createClient();
-
-	pubClient.on("error", function (err) {
-		console.error("Error " + err);
-	});
-
-	subClient.on("error", function (err) {
-		console.error("Error " + err);
-	});
-
-	//subClient.subscribe("myDate");
-
-	subClient.on("message", function (channel, message) {
-		console.log('message: '+channel + " > " + message);
-		socket.emit("msg",{key:channel,value:message});
-	});
-
-	socket.on('get',function(data){
-  		pubClient.get(data,function(err,reply){
-  			socket.emit('get',{key:data,value:reply});
-  		});
-  	});
-  	
-  	socket.on('set',function(data){
-  		console.log(data);
-  		pubClient.set(data.key,data.value);
-  	});
-  	
-  	socket.on('sub',function(data){
-  		//TODO: type checking
-  		for(var i=0; i<data.length; i++){
-  			console.log('subscribe: '+data[i]);
-  			subClient.subscribe(data[i]);
-  		}
-  	});
-  	
-  	socket.on('pub',function(data){
-  		//TODO: type checking
-  		for(var i=0; i<data.length; i++){
-  			pubClient.set(data[i].key,data[i].value);
-			pubClient.publish(data[i].key,data[i].value);
-  		}
-  	});
-
-	socket.on('disconnect',function(){
-		pubClient.quit();
-		subClient.quit();
-	});
-  
-  	// request gpio list from pi
-  	piSockets.emit('get_gpio',{});
-	
-	// route browser gpio object to pis
-  	socket.on('gpio',function(data){
-  		//console.log("browser_gpio:"+data.toString());
-  		piSockets.emit('gpio',data);
-  	});
-  	
-  	//
-  	
-  	socket.on('echo',function(data){
-  		piSockets.emit('echo',data);
-  	});
-});
-
-//
-
-var piSockets = io.of('/pi').on('connection', function (socket) {
+var sockets = io.of('/pi').on('connection', function (socket) {
 
 	var id = 0;
 	socket.on('id',function(data){
@@ -186,8 +112,6 @@ var piSockets = io.of('/pi').on('connection', function (socket) {
   		}
   	});
 
-
-
 	///////////////////////////////////////////////////////////
 
 	// request gpio list from pi
@@ -199,43 +123,10 @@ var piSockets = io.of('/pi').on('connection', function (socket) {
   		browserSockets.emit('gpio',data);
   	});
   	
+  	/*
   	socket.on('echo',function(data){
   		browserSockets.emit('echo',data);
   	});
-
+	*/
 });
 
-////////////////////////////////////////////////////////////////////////////
-// redis example
-////////////////////////////////////////////////////////////////////////////
-
-/*
-
-pubClient.get("foo", function(err, reply) {
-    // reply is null when the key is missing
-    console.log(reply);
-});
-
-pubClient.get("asdfas",function(err,replay){
-	console.log(""+err);
-	console.log("found: "+(replay == null));
-});
-
-
-var redisTimer = setInterval(function(){
-	var s = (new Date()).toString();
-	pubClient.set("myDate",s);
-	pubClient.publish("myDate",s);
-},1000);
-
-client.set("string key", "string val", redis.print);
-client.hset("hash key", "hashtest 1", "some value", redis.print);
-client.hset(["hash key", "hashtest 2", "some other value"], redis.print);
-client.hkeys("hash key", function (err, replies) {
-	console.log(replies.length + " replies:");
-	replies.forEach(function (reply, i) {
-		console.log("    " + i + ": " + reply);
-	});
-	client.quit();
-});
-*/

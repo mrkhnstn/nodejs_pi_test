@@ -68,14 +68,6 @@
 					g.valCheckbox.change(valCheckboxChanged());
 				}
 
-			
-				/*
-				function sendGPIO(a){
-					var g = {pin:a.id,dir:a.inOutSelect.val(),val:a.valCheckbox.attr('checked') == 'checked' ? 1 : 0};
-					socket.emit("gpio",g);
-				}
-				*/
-				
 				function gpioDataReceived(data){
 					console.log('msg: ' + data.key + ' > ' + data.value);
 					
@@ -94,7 +86,7 @@
 				}
 				
 				// setup socket
-				var socket = io.connect('http://'+window.location.host+'/browser');
+				var socket = io.connect('http://'+window.location.host+'/pi');
 				
 				socket.on('connect',function(){
 					for(var i=0; i<gpioPinIds.length; i++){
@@ -108,36 +100,11 @@
 				socket.on('get', gpioDataReceived);
 				socket.on('msg', gpioDataReceived);
 				
-				/*
-				socket.on('gpio', function (data) {
-					console.log("gpio");
-					console.log(data);
-				
-					if(!inited){
-						initialize(data);
-						inited  = true;
-					} else {
-						// update ui
-						for(var i=0; i<data.length; i++){
-							var d = data[i];
-							var g = gpios[d.pin];
-							// create in/out select
-							g.inOutSelect.val(d.dir);
-							g.valCheckbox.attr('checked',d.val == 1);
-						}
-					}
-				});
-				*/
             });
         </script> 
         <style>
         	body {
         		padding: 10px;
-        	}
-        	button {
-        		width: 200px;
-        		height: 25px;
-        		margin: 5px;
         	}
         </style>
     </head>
