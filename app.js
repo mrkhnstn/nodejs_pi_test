@@ -262,8 +262,8 @@ client_socket.on('connect',function(){
 		var g = gpios[pinId];
 		var valKey = deviceId+':gpio:'+pinId+':value';
 		var dirKey = deviceId+':gpio:'+pinId+':direction';
-		client_socket.emit('get',key:valKey);
-		client_socket.emit('get',key:dirKey);
+		client_socket.emit('get',valKey);
+		client_socket.emit('get',dirKey);
 		client_socket.emit('sub',[valKey,dirKey]);
 	}
 });
