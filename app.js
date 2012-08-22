@@ -279,7 +279,8 @@ client_socket.on('msg', function(data){
 			if(s[3] === 'value'){
 				gpios[pinId].set(Number(data.value));
 			} else if(s[3] === 'direction'){
-				gpios[pinId].setDirection(data.value);
+				if(data.value != gpios[pinId].direction)
+					gpios[pinId].setDirection(data.value);
 			}
 		}
 	}
