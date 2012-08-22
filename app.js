@@ -263,24 +263,6 @@ client_socket.on('disconnect',function(){
 	client_socket.isConnected = false;
 });
 
-/*
-function asdfs(){
-	var deviceId = "myDevice";	
-	
-	client_socket.emit('get','myDevice:gpio:1');
-	
-
-	
-	client_socket.emit('set',{key:'myDevice:gpio:1',value:0});
-	client_socket.emit('sub',['myDevice:gpio:1']);
-		
-	// update gpio pin on server when pin changes
-	client_socket.emit('pub',[
-		{key:'myDevice:gpio:1',value:1};
-	]);
-}
-*/
-
 client_socket.on('get', function(data){
 /*
 	data.key;
@@ -290,9 +272,20 @@ client_socket.on('get', function(data){
 
 client_socket.on('msg', function(data){
 	console.log('msg: ' + data.key + ' > ' + data.value);
+	var s = data.key.split(':');
+	if(s[0] === deviceId){
+		if(s[1] === 'gpio'){
+			var pinId = Number(s[2]);
+			if(s[3] === 'value'){
+				gpios[pinId].set(Number(data.value));
+			} else if(s[3] === 'direction'){
+				gpios[pinId].setDirection(data.value);
+			}
+		}
+	}
 	if(data.key == 'myDevice:gpio:1:value'){ //check with regex
 		// pin id should be extracted with regex
-		gpios[1].set(Number(data.value));
+		
 	}
 });
 
