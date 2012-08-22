@@ -43,12 +43,15 @@ server.listen(app.get('port'), function(){
 
 var io = require('socket.io').listen(server);
 
-io.set('transports', [
-    'websocket'
-  , 'htmlfile'
-  , 'xhr-polling'
-  , 'jsonp-polling'
-  ]);
+io.configure(function () {
+	io.set('transports', [
+		'websocket'
+	  , 'htmlfile'
+	  , 'xhr-polling'
+	  , 'jsonp-polling'
+	  ]);
+	io.disable('log');
+});
 
 //
 
@@ -94,6 +97,7 @@ var piSockets = io.of('/pi').on('connection', function (socket) {
   	});
   	
   	socket.on('set',function(data){
+  		console.log(data);
   		pubClient.set(data.key,data.value);
   	});
   	

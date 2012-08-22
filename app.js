@@ -67,6 +67,10 @@ for(var i=0; i<gpioPinIds.length; i++){
 				try{
 					io.sockets.emit('gpio',getGPIO());
 					client_socket.emit('gpio',getGPIO());
+					
+					var valKey = deviceId+':gpio:'+a+':value'; //TODO: cache
+					client_socket.emit('pub',[{key:valKey,value:g.value}]);
+
 				} catch(e) {
 					console.error(e);
 				}
@@ -75,7 +79,9 @@ for(var i=0; i<gpioPinIds.length; i++){
 			g.on("directionChange",function(dir){
 				console.log("pin " + a + " changed direction to " + dir);
 				
-				var cachedValue = 1;
+				var dirKey = deviceId+':gpio:'+a+':direction'; //TODO: cache
+				client_socket.emit('pub',[{key:dirKey,value:g.direction}]);
+					
 				if(dir === 'out'){
 					if(g.value != g.desiredValue){
 						g.set(g.desiredValue);
@@ -110,12 +116,12 @@ var getGPIO = function(){
 }
 
 var setGPIO = function(data){
-	console.log("gpio:"+data.toString());
+	//console.log("gpio:"+data.toString());
 	var pin = Number(data.pin);
 	if(gpioPinIds.indexOf(pin) != -1){
 		try {
 			var g = gpios[data.pin];
-			console.log(g);
+			//console.log(g);
 			if(g.direction != data.dir){
 				g.setDirection(data.dir);
 			}
@@ -198,12 +204,15 @@ server.listen(app.get('port'), function(){
 
 var io = require('socket.io').listen(server);
 
-io.set('transports', [
-    'websocket'
-  , 'htmlfile'
-  , 'xhr-polling'
-  , 'jsonp-polling'
-  ]);
+io.configure(function () {
+	io.set('transports', [
+		'websocket'
+	  , 'htmlfile'
+	  , 'xhr-polling'
+	  , 'jsonp-polling'
+	  ]);
+	io.disable('log');
+});
 
 io.of('/browser').on('connection', function (socket) {
 
@@ -234,9 +243,24 @@ var client_socket = io_client.connect( "http://5.157.248.122:3333/pi");
 //note the pi namescape
 
 
+var deviceId = "myDevice";
+
 client_socket.on('connect',function(){
 	console.log("client_socket connected");
-	//client_socket.emit('set',{key:'myDevice:gpio:1',value:0});
+	client_socket.isConnected = true;
+	for(var i=0; i<gpioPinIds.length; i++){
+		var pinId = gpioPinIds[i];
+		var g = gpios[pinId];
+		var valKey = deviceId+':gpio:'+pinId+':value';
+		var dirKey = deviceId+':gpio:'+pinId+':direction';
+		client_socket.emit('set',{key:valKey,value:g.value});
+		client_socket.emit('set',{key:dirKey,value:g.direction});
+		client_socket.emit('sub',[valKey,dirKey]);
+	}
+});
+
+client_socket.on('disconnect',function(){
+	client_socket.isConnected = false;
 });
 
 /*
