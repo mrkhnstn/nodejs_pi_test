@@ -292,7 +292,7 @@ client_socket.on('msg', function(data){
 	console.log('msg: ' + data.key + ' > ' + data.value);
 	if(data.key == 'myDevice:gpio:1:value'){ //check with regex
 		// pin id should be extracted with regex
-		gpio[1].set(Number(data.value));
+		gpios[1].set(Number(data.value));
 	}
 });
 
