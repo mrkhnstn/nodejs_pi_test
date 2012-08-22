@@ -87,6 +87,7 @@ var piSockets = io.of('/pi').on('connection', function (socket) {
 	//subClient.subscribe("myDate");
 
 	subClient.on("message", function (channel, message) {
+		console.log('message: '+channel + " > " + message);
 		socket.emit("msg",{key:channel,value:message});
 	});
 
@@ -104,6 +105,7 @@ var piSockets = io.of('/pi').on('connection', function (socket) {
   	socket.on('sub',function(data){
   		//TODO: type checking
   		for(var i=0; i<data.length; i++){
+  			console.log('subscribe: '+data[i]);
   			subClient.subscribe(data[i]);
   		}
   	});

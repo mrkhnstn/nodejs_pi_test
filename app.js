@@ -289,17 +289,14 @@ client_socket.on('get', function(data){
 });
 
 client_socket.on('msg', function(data){
-/*
-	var a = data.key;
-	var b = data.value;
-	if(data.ch == 'myDevice:gpio:1'){ //check with regex
+	console.log('msg: ' + data.key + ' > ' + data.value);
+	if(data.key == 'myDevice:gpio:1:value'){ //check with regex
 		var newValue = b;
 		// pin id should be extracted with regex
 		if(newValue != gpio[1].value){
-			gpio[1].set(newValue);
+			gpio[1].set(Number(data.value));
 		}
 	}
-*/
 });
 
 client_socket.on('get_gpio', function (data) {
