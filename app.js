@@ -273,7 +273,7 @@ client_socket.on('disconnect',function(){
 });
 
 client_socket.on('get', function(data){
-	console.log('msg: ' + data.key + ' > ' + data.value);
+	console.log('get: ' + data.key + ' > ' + data.value);
 	var s = data.key.split(':');
 	if(s[0] === deviceId){
 		if(s[1] === 'gpio'){
@@ -285,6 +285,7 @@ client_socket.on('get', function(data){
 						value:gpios[pinId].value
 					}]);
 				} else {
+					console.log("got cloud value: " + pinId + " > " + data.value);
 					gpios[pinId].set(Number(data.value));
 				}
 			} else if(s[3] === 'direction'){
@@ -294,6 +295,7 @@ client_socket.on('get', function(data){
 						value:gpios[pinId].direction
 					}]);
 				} else {
+					console.log("got cloud dir: " + pinId + " > " + data.value);
 					if(data.value != gpios[pinId].direction)
 						gpios[pinId].setDirection(data.value);
 				}
