@@ -1,12 +1,8 @@
-
-/**
- * Module dependencies.
- */
-
 var express = require('express')
   , routes = require('./routes')
   , http = require('http')
-  , path = require('path');
+  , path = require('path')
+  , redis = require("redis");
 
 var app = express();
 
@@ -33,7 +29,7 @@ app.get('/', function(req, res){
 });
 
 ////////////////////////////////////////////////////////////////////////////
-//
+// start server
 ////////////////////////////////////////////////////////////////////////////
 
 var server = http.createServer(app);
@@ -54,67 +50,117 @@ io.set('transports', [
   , 'jsonp-polling'
   ]);
 
-/*
-function getGPIO(){
-	var a = [];
-		for(var i=0; i<gpios.length; i++){
-			var g = gpios[i];
-			if(g)
-				a.push({
-					pin:g.headerNum,
-					dir:g.direction,
-					val:g.value
-					});
-		}
-	
-	return a;
-}
-*/
+//
 
 var browserSockets = io.of('/browser').on('connection', function (socket) {
   
+  	// request gpio list from pi
+  	piSockets.emit('get_gpio',{});
+	
+	// route browser gpio object to pis
   	socket.on('gpio',function(data){
-  		console.log("browser_gpio:"+data.toString());
+  		//console.log("browser_gpio:"+data.toString());
   		piSockets.emit('gpio',data);
   	});
 });
 
+//
+
 var piSockets = io.of('/pi').on('connection', function (socket) {
 
-  	socket.emit('get_gpio',{}); // request gpio list
+	///////////////////////////////////////////////////////////
+	// redis related
+	var pubClient = redis.createClient();
+	var subClient = redis.createClient();
 
+	pubClient.on("error", function (err) {
+		console.error("Error " + err);
+	});
+
+	subClient.on("error", function (err) {
+		console.error("Error " + err);
+	});
+
+	//subClient.subscribe("myDate");
+
+	subClient.on("message", function (channel, message) {
+		socket.emit("msg",{key:channel,value:message});
+	});
+
+	socket.on('get',function(data){
+  		pubClient.get(data,function(err,reply){
+  			socket.emit('get',{key:data,value:reply});
+  		});
+  	});
+  	
+  	socket.on('set',function(data){
+  		pubClient.set(data.key,data.value);
+  	});
+  	
+  	socket.on('sub',function(data){
+  		//TODO: type checking
+  		for(var i=0; i<data.length; i++){
+  			subClient.subscribe(data[i]);
+  		}
+  	});
+  	
+  	socket.on('pub',function(data){
+  		//TODO: type checking
+  		for(var i=0; i<data.length; i++){
+  			pubClient.set(data[i].key,data[i].value);
+			pubClient.publish(data[i].key,data[i].value);
+  		}
+  	});
+
+	socket.on('disconnect',function(){
+		pubClient.quit();
+		subClient.quit();
+	});
+
+	///////////////////////////////////////////////////////////
+
+	// request gpio list from pi
+  	socket.emit('get_gpio',{}); 
+
+	// route pi gpio object to browsers
   	socket.on('gpio',function(data){
   		console.log("gpio:"+data.toString());
   		browserSockets.emit('gpio',data);
   	});
 
-	/*
-	socket.emit("gpio",getGPIO());
-  
-  	socket.on('gpio',function(data){
-  		console.log("gpio:"+data.toString());
-  	}
-  		//sendGPIO();
-  		var pin = Number(data.pin);
-		console.log(gpioPinIds);
-		console.log(pin);
-  		if(gpioPinIds.indexOf(pin) != -1){
-  			try {
-  				var g = gpios[data.pin];
-  				console.log(g);
-  				if(g.direction != data.dir){
-  					g.setDirection(data.dir);
-  				}
-  				if(g.direction == "out"){
-  					g.set(data.val);
-  				}
-  				//io.sockets.emit("gpio",getGPIO());
-  			} catch(e) {
-  				console.error(e);
-  				//io.sockets.emit("gpio",getGPIO());
-  			}
-  		}
-  	});
-	*/
-	
 });
+
+////////////////////////////////////////////////////////////////////////////
+// redis example
+////////////////////////////////////////////////////////////////////////////
+
+/*
+
+pubClient.get("foo", function(err, reply) {
+    // reply is null when the key is missing
+    console.log(reply);
+});
+
+pubClient.get("asdfas",function(err,replay){
+	console.log(""+err);
+	console.log("found: "+(replay == null));
+});
+
+
+var redisTimer = setInterval(function(){
+	var s = (new Date()).toString();
+	pubClient.set("myDate",s);
+	pubClient.publish("myDate",s);
+},1000);
+
+client.set("string key", "string val", redis.print);
+client.hset("hash key", "hashtest 1", "some value", redis.print);
+client.hset(["hash key", "hashtest 2", "some other value"], redis.print);
+client.hkeys("hash key", function (err, replies) {
+	console.log(replies.length + " replies:");
+	replies.forEach(function (reply, i) {
+		console.log("    " + i + ": " + reply);
+	});
+	client.quit();
+});
+*/

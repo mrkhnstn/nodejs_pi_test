@@ -26,14 +26,11 @@ app.configure('development', function(){
   app.use(express.errorHandler());
 });
 
-
-
 //app.get('/', routes.index);
 
 app.get('/', function(req, res){
   res.send('RPi says hello :)');
 });
-
 
 
 ////////////////////////////////////////////////////////////////////////////
@@ -55,8 +52,17 @@ for(var i=0; i<gpioPinIds.length; i++){
 		var a = id;
 		return function(){
 			console.log("pin " + a + " ready");
-			gpios[a].set(0);
-			gpios[a].on("change",function(val){
+			var g = gpios[a];
+			
+			g.desiredValue = 0;
+			g._set = g.set;
+			g.set = function(val){
+				this.desiredValue = val;
+				this._set(val);
+			}
+			g.set(0);
+			
+			g.on("change",function(val){
 				console.log("pin " + a + " changed to " + val);
 				try{
 					io.sockets.emit('gpio',getGPIO());
@@ -64,6 +70,21 @@ for(var i=0; i<gpioPinIds.length; i++){
 				} catch(e) {
 					console.error(e);
 				}
+			});
+			
+			g.on("directionChange",function(dir){
+				console.log("pin " + a + " changed direction to " + dir);
+				
+				var cachedValue = 1;
+				if(dir === 'out'){
+					if(g.value != g.desiredValue){
+						g.set(g.desiredValue);
+					}
+				} else {
+					g._get();
+					g.desiredValue = gpios[a].value;
+				}
+				
 			});
 		}
 	}
@@ -74,7 +95,7 @@ for(var i=0; i<gpioPinIds.length; i++){
 	});
 }
 
-function getGPIO(){
+var getGPIO = function(){
 	var a = [];
 		for(var i=0; i<gpios.length; i++){
 			var g = gpios[i];
@@ -85,8 +106,26 @@ function getGPIO(){
 					val:g.value
 					});
 		}
-	
 	return a;
+}
+
+var setGPIO = function(data){
+	console.log("gpio:"+data.toString());
+	var pin = Number(data.pin);
+	if(gpioPinIds.indexOf(pin) != -1){
+		try {
+			var g = gpios[data.pin];
+			console.log(g);
+			if(g.direction != data.dir){
+				g.setDirection(data.dir);
+			}
+			if(g.direction == "out"){
+				g.set(data.val);
+			}
+		} catch(e) {
+			console.error(e);
+		}
+	}
 }
 
 // output all gpios including directions and values
@@ -99,8 +138,6 @@ app.get('/gpio', function(req,res){
 	}
 	res.send(a);
 });
-
-
 
 // get value of gpio pin
 app.get('/gpio/:pin', function(req, res){
@@ -168,9 +205,7 @@ io.set('transports', [
   , 'jsonp-polling'
   ]);
 
-
-
-io.sockets.on('connection', function (socket) {
+io.of('/browser').on('connection', function (socket) {
 
   	socket.emit('news', { hello: 'world' });
 
@@ -183,60 +218,69 @@ io.sockets.on('connection', function (socket) {
 
 	socket.emit("gpio",getGPIO());
   
-  	socket.on('gpio',function(data){
-  		console.log("gpio:"+data.toString());
-  		//sendGPIO();
-  		var pin = Number(data.pin);
-		console.log(gpioPinIds);
-		console.log(pin);
-  		if(gpioPinIds.indexOf(pin) != -1){
-  			try {
-  				var g = gpios[data.pin];
-  				console.log(g);
-  				if(g.direction != data.dir){
-  					g.setDirection(data.dir);
-  				}
-  				if(g.direction == "out"){
-  					g.set(data.val);
-  				}
-  				//io.sockets.emit("gpio",getGPIO());
-  			} catch(e) {
-  				console.error(e);
-  				//io.sockets.emit("gpio",getGPIO());
-  			}
-  		}
-  	});
-  	
+  	socket.on('gpio',setGPIO);  	
   	//	
   	/////////////////////////////////////////////////////////////
 
 });
 
+/////////////////////////////////////////////////////////////
+// pi to server communication
+/////////////////////////////////////////////////////////////
 
 var io_client = require( 'socket.io-client' );
-var client_socket = io_client.connect( "http://5.157.248.122:3333/pi");
+
+var client_socket = io_client.connect( "http://5.157.248.122:3333/pi"); 
+//note the pi namescape
+
+
+client_socket.on('connect',function(){
+	console.log("client_socket connected");
+	//client_socket.emit('set',{key:'myDevice:gpio:1',value:0});
+});
+
+/*
+function asdfs(){
+	var deviceId = "myDevice";	
+	
+	client_socket.emit('get','myDevice:gpio:1');
+	
+
+	
+	client_socket.emit('set',{key:'myDevice:gpio:1',value:0});
+	client_socket.emit('sub',['myDevice:gpio:1']);
+		
+	// update gpio pin on server when pin changes
+	client_socket.emit('pub',[
+		{key:'myDevice:gpio:1',value:1};
+	]);
+}
+*/
+
+client_socket.on('get', function(data){
+/*
+	data.key;
+	data.value;
+*/
+});
+
+client_socket.on('msg', function(data){
+/*
+	var a = data.key;
+	var b = data.value;
+	if(data.ch == 'myDevice:gpio:1'){ //check with regex
+		var newValue = b;
+		// pin id should be extracted with regex
+		if(newValue != gpio[1].value){
+			gpio[1].set(newValue);
+		}
+	}
+*/
+});
 
 client_socket.on('get_gpio', function (data) {
 	client_socket.emit('gpio',getGPIO());
 });
 
-client_socket.on('gpio', function (data) {
-	console.log("gpio:"+data.toString());
-	var pin = Number(data.pin);
-	console.log(gpioPinIds);
-	console.log(pin);
-	if(gpioPinIds.indexOf(pin) != -1){
-		try {
-			var g = gpios[data.pin];
-			console.log(g);
-			if(g.direction != data.dir){
-				g.setDirection(data.dir);
-			}
-			if(g.direction == "out"){
-				g.set(data.val);
-			}
-		} catch(e) {
-			console.error(e);
-		}
-	}
-});
+client_socket.on('gpio',setGPIO);
+
