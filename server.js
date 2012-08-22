@@ -53,16 +53,59 @@ io.configure(function () {
 	io.disable('log');
 });
 
+var piMap = {}
+var piList =[];
+
+var registerPi = function(deviceId,socketId){
+	var a = {name:deviceId,socket:socketId};
+	piMap[deviceId] = a;
+	piList = [];
+	for(n in piMap){
+		piList.push(piMap[n]);
+	}
+	sockets.emit('pi_list',piList);
+}
+
+var unregisterPi = function(deviceId){
+	delete piMap[deviceId];
+	piList = []
+	for(n in piMap){
+		piList.push(n);
+	}
+	sockets.emit('pi_list',piList);
+}
+
 var sockets = io.of('/pi').on('connection', function (socket) {
 
-	var id = 0;
-	socket.on('id',function(data){
-		id=data;
+	var id = null;
+	var isPi = false;
+	
+	console.log('socket_id',socket.id);
+	socket.emit('socket_id',socket.id);
+	
+	socket.on('register_pi',function(data){
+		id = data;
+		isPi = true;
+		registerPi(id,socket.id);
+	});
+
+	socket.on('get_pi_list',function(data){
+		socket.emit('pi_list',piList);
 	});
 
 	socket.on('disconnect',function(){
+		if(isPi)
+			unregisterPi(id,socket.id);
 		pubClient.quit();
 		subClient.quit();
+	});
+	
+	socket.on('message',function(data){
+		try {
+			//TODO check whether destination socket exists
+			sockets.sockets[data.to].emit('message',data);
+		} catch(e){
+		}
 	});
 
 	///////////////////////////////////////////////////////////
@@ -117,13 +160,14 @@ var sockets = io.of('/pi').on('connection', function (socket) {
 	// request gpio list from pi
   	socket.emit('get_gpio',{}); 
 
+  	/*
 	// route pi gpio object to browsers
   	socket.on('gpio',function(data){
   		console.log("gpio:"+data.toString());
   		browserSockets.emit('gpio',data);
   	});
   	
-  	/*
+
   	socket.on('echo',function(data){
   		browserSockets.emit('echo',data);
   	});

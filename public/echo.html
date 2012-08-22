@@ -11,22 +11,66 @@
 				console.log("echo");
 
 				// setup socket
-				var socket = io.connect('http://'+window.location.host+'/browser');
+				var socket = io.connect('http://'+window.location.host+'/pi');
+				
+				socket.on('socket_id',function(data){
+					
+					console.log('socket_id',data);
+					var myId = data;
+
+					socket.emit('get_pi_list',{});
+					
+					$('#send_button').click(function(){
+						var m = {
+							from: myId,
+							to: $('#rpi_select').val(),
+							msg : {
+								cmd: $('#cmd_select').val()
+							}
+						}
+						
+						switch(m.msg.cmd){
+							case 'echo' : 
+								m.msg.content = $('#text_field').val();
+								break;
+							case 'shell':
+								m.msg.shellCmd = $('#text_field').val();
+								break;
+							case 'serial':
+								m.msg.content = $('#text_field').val();
+								break;
+						}
+					
+						socket.emit('message',m);
+						
+					});
+				
+				});
+				
+				socket.on('message',function(data){
+					console.log('message',data);
+				});
+				
+				socket.on('pi_list',function(data){
+					console.log('pi_list',data);
+					
+					var r = $('#rpi_select');
+					var currentVal = r.val();
+					r.html("");
+					
+					for(var i=0; i<data.length; i++)
+						r.append('<option value="'+data[i].socket+'">'+data[i].name+'</option>');
+
+					if(currentVal != null)
+						r.val(currentVal);
+					
+				});
 				
 				socket.on('connect',function(){
+					console.log("connection");
 				});
 				
-				socket.on('echo', function(data){
-					console.log('echo',data);
-				});
 				
-				$('#send_button').click(function(){
-					socket.emit('echo',{
-						from: 'hello',
-						to: 'myDevice',
-						msg: $('#text_field').val()
-					});
-				});
             });
         </script> 
         <style>
@@ -40,6 +84,12 @@
         </style>
     </head>
     <body>
+    	<select id='rpi_select'></select>
+    	<select id='cmd_select'>
+    		<option value='echo'>echo</option>
+    		<option value='shell'>shell</option>
+    		<option value='serial'>serial</option>
+    	</select>
     	<input type="text" size='128' name="text_field" id='text_field'/>
     	<button id='send_button'>send</button>
     </body>
