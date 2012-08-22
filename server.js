@@ -117,11 +117,27 @@ var browserSockets = io.of('/browser').on('connection', function (socket) {
   		//console.log("browser_gpio:"+data.toString());
   		piSockets.emit('gpio',data);
   	});
+  	
+  	//
+  	
+  	socket.on('echo',function(data){
+  		piSockets.emit('echo',data);
+  	});
 });
 
 //
 
 var piSockets = io.of('/pi').on('connection', function (socket) {
+
+	var id = 0;
+	socket.on('id',function(data){
+		id=data;
+	});
+
+	socket.on('disconnect',function(){
+		pubClient.quit();
+		subClient.quit();
+	});
 
 	///////////////////////////////////////////////////////////
 	// redis related
@@ -170,10 +186,7 @@ var piSockets = io.of('/pi').on('connection', function (socket) {
   		}
   	});
 
-	socket.on('disconnect',function(){
-		pubClient.quit();
-		subClient.quit();
-	});
+
 
 	///////////////////////////////////////////////////////////
 
@@ -184,6 +197,10 @@ var piSockets = io.of('/pi').on('connection', function (socket) {
   	socket.on('gpio',function(data){
   		console.log("gpio:"+data.toString());
   		browserSockets.emit('gpio',data);
+  	});
+  	
+  	socket.on('echo',function(data){
+  		browserSockets.emit('echo',data);
   	});
 
 });

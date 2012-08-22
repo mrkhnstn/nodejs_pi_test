@@ -54,13 +54,15 @@ for(var i=0; i<gpioPinIds.length; i++){
 			console.log("pin " + a + " ready");
 			var g = gpios[a];
 			
-			g.desiredValue = 0;
+			
 			g._set = g.set;
 			g.set = function(val){
 				this.desiredValue = val;
 				this._set(val);
 			}
-			g.set(0);
+			
+			//g.set(0);
+			g.desiredValue = g.value;
 			
 			g.on("change",function(val){
 				console.log("pin " + a + " changed to " + val);
@@ -257,6 +259,9 @@ var deviceId = "myDevice";
 client_socket.on('connect',function(){
 	console.log("client_socket connected");
 	client_socket.isConnected = true;
+	
+	client_socket.emit('id',deviceId);
+	
 	for(var i=0; i<gpioPinIds.length; i++){
 		var pinId = gpioPinIds[i];
 		var g = gpios[pinId];
@@ -269,6 +274,7 @@ client_socket.on('connect',function(){
 });
 
 client_socket.on('disconnect',function(){
+	console.log("client_socket disconnected");
 	client_socket.isConnected = false;
 });
 
@@ -329,4 +335,8 @@ client_socket.on('get_gpio', function (data) {
 });
 
 client_socket.on('gpio',setGPIO);
+
+client_socket.on('echo',function(data){
+	client_socket.emit('echo',data);
+});
 
