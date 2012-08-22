@@ -57,6 +57,58 @@ io.configure(function () {
 
 var browserSockets = io.of('/browser').on('connection', function (socket) {
   
+  	///////////////////////////////////////////////////////////
+	// redis related
+	var pubClient = redis.createClient();
+	var subClient = redis.createClient();
+
+	pubClient.on("error", function (err) {
+		console.error("Error " + err);
+	});
+
+	subClient.on("error", function (err) {
+		console.error("Error " + err);
+	});
+
+	//subClient.subscribe("myDate");
+
+	subClient.on("message", function (channel, message) {
+		console.log('message: '+channel + " > " + message);
+		socket.emit("msg",{key:channel,value:message});
+	});
+
+	socket.on('get',function(data){
+  		pubClient.get(data,function(err,reply){
+  			socket.emit('get',{key:data,value:reply});
+  		});
+  	});
+  	
+  	socket.on('set',function(data){
+  		console.log(data);
+  		pubClient.set(data.key,data.value);
+  	});
+  	
+  	socket.on('sub',function(data){
+  		//TODO: type checking
+  		for(var i=0; i<data.length; i++){
+  			console.log('subscribe: '+data[i]);
+  			subClient.subscribe(data[i]);
+  		}
+  	});
+  	
+  	socket.on('pub',function(data){
+  		//TODO: type checking
+  		for(var i=0; i<data.length; i++){
+  			pubClient.set(data[i].key,data[i].value);
+			pubClient.publish(data[i].key,data[i].value);
+  		}
+  	});
+
+	socket.on('disconnect',function(){
+		pubClient.quit();
+		subClient.quit();
+	});
+  
   	// request gpio list from pi
   	piSockets.emit('get_gpio',{});
 	

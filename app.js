@@ -79,16 +79,25 @@ for(var i=0; i<gpioPinIds.length; i++){
 			g.on("directionChange",function(dir){
 				console.log("pin " + a + " changed direction to " + dir);
 				
-				var dirKey = deviceId+':gpio:'+a+':direction'; //TODO: cache
-				client_socket.emit('pub',[{key:dirKey,value:g.direction}]);
+				try {
+				
+					io.sockets.emit('gpio',getGPIO());
+					client_socket.emit('gpio',getGPIO());
 					
-				if(dir === 'out'){
-					if(g.value != g.desiredValue){
-						g.set(g.desiredValue);
+					var dirKey = deviceId+':gpio:'+a+':direction'; //TODO: cache
+					client_socket.emit('pub',[{key:dirKey,value:g.direction}]);
+						
+					if(dir === 'out'){
+						if(g.value != g.desiredValue){
+							g.set(g.desiredValue);
+						}
+					} else {
+						g._get();
+						g.desiredValue = gpios[a].value;
 					}
-				} else {
-					g._get();
-					g.desiredValue = gpios[a].value;
+				
+				} catch(e) {
+					console.error(e);
 				}
 				
 			});
@@ -253,8 +262,8 @@ client_socket.on('connect',function(){
 		var g = gpios[pinId];
 		var valKey = deviceId+':gpio:'+pinId+':value';
 		var dirKey = deviceId+':gpio:'+pinId+':direction';
-		client_socket.emit('set',{key:valKey,value:g.value});
-		client_socket.emit('set',{key:dirKey,value:g.direction});
+		client_socket.emit('get',{key:valKey,value:g.value});
+		client_socket.emit('get',{key:dirKey,value:g.direction});
 		client_socket.emit('sub',[valKey,dirKey]);
 	}
 });
@@ -264,6 +273,33 @@ client_socket.on('disconnect',function(){
 });
 
 client_socket.on('get', function(data){
+	console.log('msg: ' + data.key + ' > ' + data.value);
+	var s = data.key.split(':');
+	if(s[0] === deviceId){
+		if(s[1] === 'gpio'){
+			var pinId = Number(s[2]);
+			if(s[3] === 'value'){
+				if(data.value == null){
+					client_socket.pub([{
+						key:data.key,
+						value:gpios[pinId].value
+					}]);
+				} else {
+					gpios[pinId].set(Number(data.value));
+				}
+			} else if(s[3] === 'direction'){
+				if(data.value == null){
+					client_socket.pub([{
+						key:data.key,
+						value:gpios[pinId].direction
+					}]);
+				} else {
+					if(data.value != gpios[pinId].direction)
+						gpios[pinId].setDirection(data.value);
+				}
+			}
+		}
+	}
 /*
 	data.key;
 	data.value;
@@ -283,10 +319,6 @@ client_socket.on('msg', function(data){
 					gpios[pinId].setDirection(data.value);
 			}
 		}
-	}
-	if(data.key == 'myDevice:gpio:1:value'){ //check with regex
-		// pin id should be extracted with regex
-		
 	}
 });
 
