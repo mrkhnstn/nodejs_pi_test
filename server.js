@@ -80,7 +80,7 @@ var sockets = io.of('/pi').on('connection', function (socket) {
 	var id = null;
 	var isPi = false;
 	
-	console.log('socket_id',socket.id);
+	//console.log('socket_id',socket.id);
 	socket.emit('socket_id',socket.id);
 	
 	socket.on('register_pi',function(data){
