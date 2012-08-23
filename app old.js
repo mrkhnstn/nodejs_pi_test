@@ -1,18 +1,27 @@
-////////////////////////////////////////////////////////////////////////////
-// modules
-////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Module dependencies.
+ */
 
 var express = require('express')
   , routes = require('./routes')
   , http = require('http')
   , path = require('path')
-  , util = require('util')
-  , exec = require('child_process').exec
-  , io_client = require('socket.io-client')
-  , MAC = require('./MAC');
+  , sys = require('util')
+  , exec = require('child_process').exec;
 
 ////////////////////////////////////////////////////////////////////////////
-// setup express
+// detect deviceID using ethernet MAC address
+////////////////////////////////////////////////////////////////////////////
+var deviceId = "myDevice";
+
+var MAC = require('./MAC');
+MAC.get(function(adr){
+	deviceId = adr;
+	console.log("Device ID",deviceId);
+	// any other initialization should happen after here
+});
+
 ////////////////////////////////////////////////////////////////////////////
 
 var app = express();
@@ -40,55 +49,28 @@ app.get('/', function(req, res){
 });
 
 ////////////////////////////////////////////////////////////////////////////
-// startup 
-////////////////////////////////////////////////////////////////////////////
-var deviceId = "00:00:00:00:00:00";
-var socketAddress = 'http://5.157.248.122:3333';
-var socketNamespace = 'pi';
-var socketId = "";
-var client_socket = null;
-
-var server = http.createServer(app);
-server.listen(app.get('port'), function(){
-  	console.log("Express server listening on port " + app.get('port'));
- 
- 	// get device id
-  	MAC.get(function(mac){
-		deviceId = mac;
-		console.log("Device ID",deviceId);
-	
-		setupClientSocket();
-		setupGPIO();
-		setupSerial();
-	});
-
-});
-
-////////////////////////////////////////////////////////////////////////////
 // Serial
 ////////////////////////////////////////////////////////////////////////////
 
 var serialport = require("serialport");
 var SerialPort = serialport.SerialPort;
-var sp = null;
+
+//TODO: automatic detection of arduino
+var sp = new SerialPort("/dev/ttyACM0", {
+//var sp = new SerialPort("/dev/tty.usbmodemfd121", {
+	parser: serialport.parsers.readline("\r\n") 
+});
+
 var serialResponse = null;
 
-function setupSerial(){
-	//TODO: automatic detection of arduino
-	sp = new SerialPort("/dev/ttyACM0", {
-	//var sp = new SerialPort("/dev/tty.usbmodemfd121", {
-		parser: serialport.parsers.readline("\r\n") 
-	});
-	
-	sp.on("data", function (data) {
-		console.log("serial: "+data.toString());
-		if(serialResponse != null){
-			serialResponse.msg.content = data;
-			client_socket.emit('message',serialResponse);
-			serialResponse = null;
-		}
-	});
-}
+sp.on("data", function (data) {
+    console.log("serial: "+data.toString());
+    if(serialResponse != null){
+    	serialResponse.msg.content = data;
+    	client_socket.emit('message',serialResponse);
+    	serialResponse = null;
+    }
+});
 
 ////////////////////////////////////////////////////////////////////////////
 // GPIO
@@ -101,74 +83,72 @@ var gpioPinIds = [14,15,18,23,24,25,8,7,0,1,4,17,21,22,10,9,11];
 //var gpioPinIds = [0];
 var gpios = [];
 
-var setupGPIO = function(){
-	// setup all available gpios
-	for(var i=0; i<gpioPinIds.length; i++){
-		var id = gpioPinIds[i];
-		
-		var f = function(){
-			var a = id;
-			return function(){
-				console.log("pin " + a + " ready");
-				var g = gpios[a];
+// setup all available gpios
+for(var i=0; i<gpioPinIds.length; i++){
+	var id = gpioPinIds[i];
+	
+	var f = function(){
+		var a = id;
+		return function(){
+			console.log("pin " + a + " ready");
+			var g = gpios[a];
+			
+			
+			g._set = g.set;
+			g.set = function(val){
+				this.desiredValue = val;
+				this._set(val);
+			}
+			
+			//g.set(0);
+			g.desiredValue = g.value;
+			
+			g.on("change",function(val){
+				console.log("pin " + a + " changed to " + val);
+				try{
+					io.sockets.emit('gpio',getGPIO());
+					client_socket.emit('gpio',getGPIO());
+					
+					var valKey = deviceId+':gpio:'+a+':value'; //TODO: cache
+					client_socket.emit('pub',[{key:valKey,value:g.value}]);
+
+				} catch(e) {
+					console.error(e);
+				}
+			});
+			
+			g.on("directionChange",function(dir){
+				console.log("pin " + a + " changed direction to " + dir);
 				
+				try {
 				
-				g._set = g.set;
-				g.set = function(val){
-					this.desiredValue = val;
-					this._set(val);
+					io.sockets.emit('gpio',getGPIO());
+					client_socket.emit('gpio',getGPIO());
+					
+					var dirKey = deviceId+':gpio:'+a+':direction'; //TODO: cache
+					client_socket.emit('pub',[{key:dirKey,value:g.direction}]);
+						
+					if(dir === 'out'){
+						if(g.value != g.desiredValue){
+							g.set(g.desiredValue);
+						}
+					} else {
+						g._get();
+						g.desiredValue = gpios[a].value;
+					}
+				
+				} catch(e) {
+					console.error(e);
 				}
 				
-				//g.set(0);
-				g.desiredValue = g.value;
-				
-				g.on("change",function(val){
-					console.log("pin " + a + " changed to " + val);
-					try{
-						io.sockets.emit('gpio',getGPIO());
-						client_socket.emit('gpio',getGPIO());
-						
-						var valKey = deviceId+'/gpio/'+a+'/value'; //TODO: cache
-						client_socket.emit('pub',[{key:valKey,value:g.value}]);
-	
-					} catch(e) {
-						console.error(e);
-					}
-				});
-				
-				g.on("directionChange",function(dir){
-					console.log("pin " + a + " changed direction to " + dir);
-					
-					try {
-					
-						io.sockets.emit('gpio',getGPIO());
-						client_socket.emit('gpio',getGPIO());
-						
-						var dirKey = deviceId+'/gpio/'+a+'/direction'; //TODO: cache
-						client_socket.emit('pub',[{key:dirKey,value:g.direction}]);
-							
-						if(dir === 'out'){
-							if(g.value != g.desiredValue){
-								g.set(g.desiredValue);
-							}
-						} else {
-							g._get();
-							g.desiredValue = gpios[a].value;
-						}
-					
-					} catch(e) {
-						console.error(e);
-					}
-					
-				});
-			}
+			});
 		}
-		
-		gpios[id] = gpio.export(id, {
-			direction: 'out',	
-			ready: f()
-		});
 	}
+	
+	gpios[id] = gpio.export(id, {
+		direction: 'out',	
+		ready: f()
+	});
 }
 
 var getGPIO = function(){
@@ -204,9 +184,121 @@ var setGPIO = function(data){
 	}
 }
 
+// output all gpios including directions and values
+app.get('/gpio', function(req,res){
+	var a = [];
+	for(var i=0; i<gpios.length; i++){
+		var g = gpios[i];
+		if(g)
+			a.push([g.headerNum,g.direction,g.value]);
+	}
+	res.send(a);
+});
+
+// get value of gpio pin
+app.get('/gpio/:pin', function(req, res){
+  //res.send('return value for pin ' + req.params.pin);
+	var pin = Number(req.params.pin);
+	if(gpioPinIds.indexOf(pin) == -1){
+		res.send('Error: pin' + req.params.pin + ' does not exist.');
+		return;
+	} else {
+		res.send(gpios[pin].value+'');
+	}
+});
+
+// set value of gpio pin
+app.get('/gpio/:pin/:value', function(req, res){
+	var pin = Number(req.params.pin);
+
+	if(gpioPinIds.indexOf(pin) == -1){
+		res.send('Error: pin' + req.params.pin + ' does not exist.');
+		return;
+	} else {
+		var g = gpios[pin];
+		switch(req.params.value){
+			case "1":
+				g.set(1);
+				res.json([g.headerNum,g.direction,g.value]);
+				break;
+			case "0":
+				g.set(0);
+				res.json([g.headerNum,g.direction,g.value]);
+				break;
+			case "in":
+				g.setDirection('in');
+				res.json([g.headerNum,g.direction,g.value]);
+				break;
+			case "out":
+				g.setDirection('out');
+				res.json([g.headerNum,g.direction,g.value]);
+				break;
+			default:
+				res.send('Error: value has to be 1,0,in or out');
+		}
+  	}
+});
+
+////////////////////////////////////////////////////////////////////////////
+//
+////////////////////////////////////////////////////////////////////////////
+
+var server = http.createServer(app);
+server.listen(app.get('port'), function(){
+  console.log("Express server listening on port " + app.get('port'));
+});
+
+////////////////////////////////////////////////////////////////////////////
+// socket.io
+////////////////////////////////////////////////////////////////////////////
+
+var io = require('socket.io').listen(server);
+
+io.configure(function () {
+	io.set('transports', [
+		'websocket'
+	  , 'htmlfile'
+	  , 'xhr-polling'
+	  , 'jsonp-polling'
+	  ]);
+	io.disable('log');
+});
+
+
+// redundant?!
+io.of('/browser').on('connection', function (socket) {
+
+  	socket.emit('news', { hello: 'world' });
+
+  	socket.on('my other event', function (data) {
+    	console.log(data);
+  	});
+
+	/////////////////////////////////////////////////////////////
+	// GPIO socket.io experiment
+
+	socket.emit("gpio",getGPIO());
+  
+  	socket.on('gpio',setGPIO);  	
+  	//	
+  	/////////////////////////////////////////////////////////////
+
+});
+
 /////////////////////////////////////////////////////////////
 // pi to server communication
 /////////////////////////////////////////////////////////////
+
+var io_client = require( 'socket.io-client' );
+
+
+var socketAddress = 'http://5.157.248.122:3333';
+var socketNamespace = 'pi';
+var socketId = "";
+
+var client_socket;
+
+setupClientSocket();
 
 function setupClientSocket(){
 	console.log('setupClientSocket');
@@ -228,7 +320,7 @@ function setupClientSocket(){
 	},5000);
 
 	client_socket.on('connect',function(){
-		console.log("client_socket connected");
+		console.log("client_socket connected!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 		client_socket.isConnected = true;
 	});
 	
@@ -252,8 +344,8 @@ function setupClientSocket(){
 		for(var i=0; i<gpioPinIds.length; i++){
 			var pinId = gpioPinIds[i];
 			var g = gpios[pinId];
-			var valKey = deviceId+'/gpio/'+pinId+'/value';
-			var dirKey = deviceId+'/gpio/'+pinId+'/direction';
+			var valKey = deviceId+':gpio:'+pinId+':value';
+			var dirKey = deviceId+':gpio:'+pinId+':direction';
 			client_socket.emit('get',valKey);
 			client_socket.emit('get',dirKey);
 			client_socket.emit('sub',[valKey,dirKey]);
@@ -336,7 +428,7 @@ function setupClientSocket(){
 	
 	client_socket.on('msg', function(data){
 		console.log('msg: ' + data.key + ' > ' + data.value);
-		var s = data.key.split('/');
+		var s = data.key.split(':');
 		if(s[0] === deviceId){
 			if(s[1] === 'gpio'){
 				var pinId = Number(s[2]);

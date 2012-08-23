@@ -12,7 +12,11 @@
 				
 				var gpioPinIds = [0,1,4,7,8,9,10,11,14,15,17,18,21,22,23,24,25];
 				var gpios = [];
-				var deviceId = "myDevice";
+				var deviceId;
+				
+				function validDevice(){
+					return deviceId != null;
+				}
 
 				for(var i=0; i<gpioPinIds.length; i++){
 					var pinId = gpioPinIds[i];
@@ -23,8 +27,8 @@
 						label : $('<span></span>'),
 						inOutSelect : $('<select></select>'),
 						valCheckbox : $('<input type="checkbox"></checkbox>'),
-						valKey : deviceId+':gpio:'+pinId+':value',
-						dirKey : deviceId+':gpio:'+pinId+':direction'
+						valKey : '/gpio/'+pinId+'/value',
+						dirKey : '/gpio/'+pinId+'/direction'
 					};
 					
 					gpios[pinId] = g;
@@ -32,10 +36,12 @@
 					function inOutSelectChanged(){
 						var a = g;
 						return function(){
-							socket.emit('pub',[{
-								key:a.dirKey,
-								value:a.inOutSelect.val()
-							}]);
+							if(validDevice()){
+								socket.emit('pub',[{
+									key:deviceId+a.dirKey,
+									value:a.inOutSelect.val()
+								}]);
+							}
 						};
 					}
 					
@@ -59,10 +65,12 @@
 					function valCheckboxChanged(){
 						var a = g;
 						return function(){
-							socket.emit('pub',[{
-								key:a.valKey,
-								value:a.valCheckbox.attr('checked') == 'checked' ? 1 : 0
-							}]);
+							if(validDevice()){
+								socket.emit('pub',[{
+									key:deviceId+a.valKey,
+									value:a.valCheckbox.attr('checked') == 'checked' ? 1 : 0
+								}]);
+							}
 						};
 					}
 					g.valCheckbox.change(valCheckboxChanged());
@@ -71,7 +79,7 @@
 				function gpioDataReceived(data){
 					console.log('msg: ' + data.key + ' > ' + data.value);
 					
-					var s = data.key.split(':');
+					var s = data.key.split('/');
 					if(s[0] === deviceId){
 						if(s[1] === 'gpio'){
 							var pinId = Number(s[2]);
@@ -87,14 +95,55 @@
 				
 				// setup socket
 				var socket = io.connect('http://'+window.location.host+'/pi');
-				
+
 				socket.on('connect',function(){
+					socket.emit('get_pi_list',{});
+					/*
 					for(var i=0; i<gpioPinIds.length; i++){
 						var g = gpios[gpioPinIds[i]];
+						
 						socket.emit('get',g.valKey);
 						socket.emit('get',g.dirKey);
 						socket.emit('sub',[g.valKey,g.dirKey]);	
 					}
+					*/
+				});
+				
+				socket.on('pi_list',function(data){
+					console.log('pi_list',data);
+					
+					var r = $('#rpi_select');
+					
+					r.html("");
+					
+					for(var i=0; i<data.length; i++)
+						r.append('<option value="'+data[i].name+'">'+data[i].name+'</option>');
+
+					if(deviceId != null)
+						r.val(deviceId);
+						
+					var lastDeviceId = deviceId;
+					deviceId = r.val();
+					
+					console.log('deviceId',deviceId);
+
+					if(lastDeviceId != deviceId){
+						// new device selected
+						for(var i=0; i<gpioPinIds.length; i++){
+							var g = gpios[gpioPinIds[i]];
+							
+							if(lastDeviceId != null){
+								// unsubscribe last device
+								socket.emit('unsub',[lastDeviceId+g.valKey,lastDeviceId+g.dirKey]);	
+							}
+							
+							socket.emit('get',deviceId+g.valKey);
+							socket.emit('get',deviceId+g.dirKey);
+							socket.emit('sub',[deviceId+g.valKey,deviceId+g.dirKey]);	
+						}
+						
+						
+					}					
 				});
 				
 				socket.on('get', gpioDataReceived);
@@ -109,5 +158,6 @@
         </style>
     </head>
     <body>
+    	<div>device: <select id='rpi_select'></select></div>
     </body>
 </html>
