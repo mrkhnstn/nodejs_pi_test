@@ -2,12 +2,12 @@
 // modules
 ////////////////////////////////////////////////////////////////////////////
 
+console.error('hello',null);
+
 var express = require('express')
   , routes = require('./routes')
   , http = require('http')
   , path = require('path')
-  , util = require('util')
-  , exec = require('child_process').exec
   , io_client = require('socket.io-client')
   , MAC = require('./MAC');
 
@@ -48,6 +48,13 @@ var socketNamespace = 'pi';
 var socketId = "";
 var client_socket = null;
 
+var serial = null;
+var echo = null;
+var shell = null;
+var gpio = null;
+var messageObjects = {};
+var pubSubObjects = {};
+
 var server = http.createServer(app);
 server.listen(app.get('port'), function(){
   	console.log("Express server listening on port " + app.get('port'));
@@ -57,157 +64,17 @@ server.listen(app.get('port'), function(){
 		deviceId = mac;
 		console.log("Device ID",deviceId);
 	
-		setupClientSocket();
-		setupGPIO();
-		setupSerial();
+		setupSocket();
 	});
 
 });
 
-////////////////////////////////////////////////////////////////////////////
-// Serial
-////////////////////////////////////////////////////////////////////////////
-
-var serialport = require("serialport");
-var SerialPort = serialport.SerialPort;
-var sp = null;
-var serialResponse = null;
-
-function setupSerial(){
-	//TODO: automatic detection of arduino
-	sp = new SerialPort("/dev/ttyACM0", {
-	//var sp = new SerialPort("/dev/tty.usbmodemfd121", {
-		parser: serialport.parsers.readline("\r\n") 
-	});
-	
-	sp.on("data", function (data) {
-		console.log("serial: "+data.toString());
-		if(serialResponse != null){
-			serialResponse.msg.content = data;
-			client_socket.emit('message',serialResponse);
-			serialResponse = null;
-		}
-	});
-}
-
-////////////////////////////////////////////////////////////////////////////
-// GPIO
-////////////////////////////////////////////////////////////////////////////
-
-var gpio = require("gpio");
-
-// available pins
-var gpioPinIds = [14,15,18,23,24,25,8,7,0,1,4,17,21,22,10,9,11];
-var gpios = [];
-
-var setupGPIO = function(){
-	// setup all available gpios
-	for(var i=0; i<gpioPinIds.length; i++){
-		var id = gpioPinIds[i];
-		
-		var f = function(){
-			var a = id;
-			return function(){
-				console.log("pin " + a + " ready");
-				var g = gpios[a];
-				
-				
-				g._set = g.set;
-				g.set = function(val){
-					this.desiredValue = val;
-					this._set(val);
-				}
-				
-				//g.set(0);
-				g.desiredValue = g.value;
-				
-				g.on("change",function(val){
-					console.log("pin " + a + " changed to " + val);
-					try{
-						//io.sockets.emit('gpio',getGPIO());
-						//client_socket.emit('gpio',getGPIO());
-						
-						var valKey = deviceId+'/gpio/'+a+'/value'; //TODO: cache
-						client_socket.emit('pub',[{key:valKey,value:g.value}]);
-	
-					} catch(e) {
-						console.error(e);
-					}
-				});
-				
-				g.on("directionChange",function(dir){
-					console.log("pin " + a + " changed direction to " + dir);
-					
-					try {
-						//io.sockets.emit('gpio',getGPIO());
-						//client_socket.emit('gpio',getGPIO());
-						
-						var dirKey = deviceId+'/gpio/'+a+'/direction'; //TODO: cache
-						client_socket.emit('pub',[{key:dirKey,value:g.direction}]);
-							
-						if(dir === 'out'){
-							if(g.value != g.desiredValue){
-								g.set(g.desiredValue);
-							}
-						} else {
-							g._get();
-							g.desiredValue = gpios[a].value;
-						}
-					
-					} catch(e) {
-						console.error(e);
-					}
-					
-				});
-			}
-		}
-		
-		gpios[id] = gpio.export(id, {
-			direction: 'out',	
-			ready: f()
-		});
-	}
-}
-
-var getGPIO = function(){
-	var a = [];
-		for(var i=0; i<gpios.length; i++){
-			var g = gpios[i];
-			if(g)
-				a.push({
-					pin:g.headerNum,
-					dir:g.direction,
-					val:g.value
-					});
-		}
-	return a;
-}
-
-var setGPIO = function(data){
-	//console.log("gpio:"+data.toString());
-	var pin = Number(data.pin);
-	if(gpioPinIds.indexOf(pin) != -1){
-		try {
-			var g = gpios[data.pin];
-			//console.log(g);
-			if(g.direction != data.dir){
-				g.setDirection(data.dir);
-			}
-			if(g.direction == "out"){
-				g.set(data.val);
-			}
-		} catch(e) {
-			console.error(e);
-		}
-	}
-}
-
 /////////////////////////////////////////////////////////////
-// pi to server communication
+// Socket
 /////////////////////////////////////////////////////////////
 
-function setupClientSocket(){
-	console.log('setupClientSocket');
+function setupSocket(){
+	console.log('setup socket');
 
 	client_socket = io_client.connect( socketAddress + "/" + socketNamespace,{
 		'transports' : ['websocket'],
@@ -217,92 +84,99 @@ function setupClientSocket(){
 		'reconnection delay' : 500,
 		'max reconnection attempts' : 10000
 	}); 
-	//note the pi namescape
-	
-	setTimeout(function(){
-		if(!client_socket.socket.connected){
-			setupClientSocket();
-		}
-	},5000);
 
 	client_socket.on('connect',function(){
-		console.log("client_socket connected");
-		client_socket.isConnected = true;
+		console.log("socket connected");
+		
+		// setup serial if required
+		if(serial == null){
+			serial = require('./Serial');
+			serial.setup();
+			messageObjects['serial'] = serial;
+		}
+		
+		if(echo == null){
+			echo = require('./Echo');
+			messageObjects['echo'] = echo;
+		}
+		
+		if(shell == null){
+			shell = require('./Shell');
+			messageObjects['shell'] = shell;
+		}
+		
+		if(gpio == null){
+			gpio = require('./GPIO');
+			console.log(gpio);
+			gpio.setup(deviceId,client_socket);
+			pubSubObjects['gpio'] = gpio;
+		}
+
+		// register socket with objects
+	
+		for(var n in messageObjects){
+			messageObjects[n].setSocket(client_socket);
+		}
+		
+		for(var n in pubSubObjects){
+			pubSubObjects[n].setSocket(client_socket);
+		}
 	});
 	
 	client_socket.on('connect_failed',function(){
-		console.log("client_socket connect_failed");
+		console.error("socket connect_failed");
 	});
 	
 	client_socket.on('error', function() {
-		console.log("client_socket reported a generic error");
+		console.erro("socket reported a generic error");
 	});
 	
 	client_socket.on('reconnecting',function(reconnectionDelay,reconnectionAttempts){
 		console.log("reconnecting",reconnectionDelay,reconnectionAttempts);
 	});
 	
-	
 	client_socket.on('socket_id',function(data){
 		socketId = data;
 		client_socket.emit('register_pi',deviceId);
 		
-		for(var i=0; i<gpioPinIds.length; i++){
-			var pinId = gpioPinIds[i];
-			var g = gpios[pinId];
-			var valKey = deviceId+'/gpio/'+pinId+'/value';
-			var dirKey = deviceId+'/gpio/'+pinId+'/direction';
-			client_socket.emit('get',valKey);
-			client_socket.emit('get',dirKey);
-			client_socket.emit('sub',[valKey,dirKey]);
-		}
+		
 	});
 	
 	client_socket.on('disconnect',function(){
-		console.log("client_socket disconnected");
-		client_socket.isConnected = false;
+		console.log("socket disconnected");
+		
+		// unregister socket with objects
+		
+		for(var n in messageObjects){
+			messageObjects[n].setSocket(null);
+		}
+		
+		for(var n in pubSubObjects){
+			pubSubObjects[n].setSocket(client_socket);
+		}
 	});
 	
 	client_socket.on('message',function(data){
 		console.log('message',data);
 		try{
-			if(data.msg.cmd == 'echo'){
-				data.to = data.from;
-				data.from = socketId;
-				client_socket.emit('message',data);
-			} else if(data.msg.cmd == 'shell'){
-				data.to = data.from;
-				data.from = socketId;
-				
-				var child = exec(data.msg.shellCmd, function(error, stdout, stderr){
-					console.log('stdout',stdout);
-					console.log('stderr',stderr);
-					console.log('error',error);
-					
-					data.msg.stdout = stdout;
-					data.msg.stderr = stderr;
-					
-					if(error !== null){
-						data.msg.error = error;
-					}
-					
-					client_socket.emit('message',data);
-				});
-			} else if(data.msg.cmd == 'serial'){
-				sp.write(data.msg.content+"\r\n");
-				data.to = data.from;
-				data.from = socketId;
-				serialResponse = data;
-			}
+			messageObjects[data.subject].receiveMessage(data);
 		}catch(e){
+			console.error('client_socket on message',e);
 		}
-		
-		//sockets.socket(data.from).emit('message',data);
 	});
 	
 	client_socket.on('get', function(data){
 		//console.log('get: ' + data.key + ' > ' + data.value);
-		var s = data.key.split(':');
+		var s = data.key.split('/');
+		if(s[0] === deviceId){
+			try{
+				pubSubObjects[s[1]].get(s,2,data);
+			} catch(e){
+			
+			}
+		}
+		
+		/*
 		if(s[0] === deviceId){
 			if(s[1] === 'gpio'){
 				var pinId = Number(s[2]);
@@ -330,10 +204,21 @@ function setupClientSocket(){
 				}
 			}
 		}
+		*/
 	});
 	
 	client_socket.on('msg', function(data){
 		console.log('msg: ' + data.key + ' > ' + data.value);
+		var s = data.key.split('/');
+		if(s[0] === deviceId){
+			try{
+				pubSubObjects[s[1]].msg(s,2,data);
+			} catch(e){
+			
+			}
+		}
+		
+		/*
 		var s = data.key.split('/');
 		if(s[0] === deviceId){
 			if(s[1] === 'gpio'){
@@ -346,13 +231,8 @@ function setupClientSocket(){
 				}
 			}
 		}
+		*/
 	});
-	
-	client_socket.on('get_gpio', function (data) {
-		client_socket.emit('gpio',getGPIO());
-	});
-	
-	client_socket.on('gpio',setGPIO);
 	
 	client_socket.on('echo',function(data){
 		client_socket.emit('echo',data);

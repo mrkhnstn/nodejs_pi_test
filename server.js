@@ -148,10 +148,14 @@ var sockets = io.of('/pi').on('connection', function (socket) {
   	});
   	
   	socket.on('unsub',function(data){
-  		//TODO: type checking
-  		for(var i=0; i<data.length; i++){
-  			console.log('unsubscribe: '+data[i]);
-  			subClient.unsubscribe(data[i]);
+  		if(data == null){
+  			ubClient.unsubscribe();
+  		} else {
+			//TODO: type checking
+			for(var i=0; i<data.length; i++){
+				console.log('unsubscribe: '+data[i]);
+				subClient.unsubscribe(data[i]);
+			}
   		}
   	});
   	

@@ -24,23 +24,10 @@
 						var m = {
 							from: myId,
 							to: $('#rpi_select').val(),
-							msg : {
-								cmd: $('#cmd_select').val()
-							}
+							subject: $('#cmd_select').val(),
+							body: $('#text_field').val()
 						}
-						
-						switch(m.msg.cmd){
-							case 'echo' : 
-								m.msg.content = $('#text_field').val();
-								break;
-							case 'shell':
-								m.msg.shellCmd = $('#text_field').val();
-								break;
-							case 'serial':
-								m.msg.content = $('#text_field').val();
-								break;
-						}
-					
+										
 						socket.emit('message',m);
 						
 					});

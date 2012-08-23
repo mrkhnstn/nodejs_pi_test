@@ -111,8 +111,8 @@
 				
 				socket.on('pi_list',function(data){
 					console.log('pi_list',data);
-					
 					var r = $('#rpi_select');
+					
 					
 					r.html("");
 					
@@ -122,9 +122,13 @@
 					if(deviceId != null)
 						r.val(deviceId);
 						
+					updateDeviceId();			
+				});
+				
+				function updateDeviceId(){
+					var r = $('#rpi_select');
 					var lastDeviceId = deviceId;
 					deviceId = r.val();
-					
 					console.log('deviceId',deviceId);
 
 					if(lastDeviceId != deviceId){
@@ -141,13 +145,15 @@
 							socket.emit('get',deviceId+g.dirKey);
 							socket.emit('sub',[deviceId+g.valKey,deviceId+g.dirKey]);	
 						}
-						
-						
-					}					
-				});
+					}	
+				}
 				
 				socket.on('get', gpioDataReceived);
 				socket.on('msg', gpioDataReceived);
+				
+				$('#rpi_select').change(function(data){
+					updateDeviceId();
+				});
 				
             });
         </script> 
