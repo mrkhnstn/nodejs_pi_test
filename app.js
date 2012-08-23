@@ -98,7 +98,6 @@ var gpio = require("gpio");
 
 // available pins
 var gpioPinIds = [14,15,18,23,24,25,8,7,0,1,4,17,21,22,10,9,11];
-//var gpioPinIds = [0];
 var gpios = [];
 
 var setupGPIO = function(){
@@ -125,8 +124,8 @@ var setupGPIO = function(){
 				g.on("change",function(val){
 					console.log("pin " + a + " changed to " + val);
 					try{
-						io.sockets.emit('gpio',getGPIO());
-						client_socket.emit('gpio',getGPIO());
+						//io.sockets.emit('gpio',getGPIO());
+						//client_socket.emit('gpio',getGPIO());
 						
 						var valKey = deviceId+'/gpio/'+a+'/value'; //TODO: cache
 						client_socket.emit('pub',[{key:valKey,value:g.value}]);
@@ -140,9 +139,8 @@ var setupGPIO = function(){
 					console.log("pin " + a + " changed direction to " + dir);
 					
 					try {
-					
-						io.sockets.emit('gpio',getGPIO());
-						client_socket.emit('gpio',getGPIO());
+						//io.sockets.emit('gpio',getGPIO());
+						//client_socket.emit('gpio',getGPIO());
 						
 						var dirKey = deviceId+'/gpio/'+a+'/direction'; //TODO: cache
 						client_socket.emit('pub',[{key:dirKey,value:g.direction}]);
