@@ -10,7 +10,7 @@ function get(fn){
 		// try RPi ethernet first
 		exec("ifconfig eth0", function(error, stdout, stderr){
 			if(stderr == ""){
-				var start = stdout.indexOf('HWaddr ')+6;
+				var start = stdout.indexOf('HWaddr ')+7;
 				MAC = stdout.substr(start,17);
 				fn(MAC);
 			} else {
