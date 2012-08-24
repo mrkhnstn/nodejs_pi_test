@@ -97,8 +97,8 @@ function setupSocket(){
 
 	/////////////////////////////////////////////////////////////////
 
-	socket.on('connect',function(){
-		console.log("socket connected");
+	socket.on('ready',function(){
+		console.log("socket ready");
 		
 		socket.emit('register_pi',deviceId);
 		
