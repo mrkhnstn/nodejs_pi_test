@@ -148,7 +148,7 @@ var sockets = io.of('/pi').on('connection', function (socket) {
 	//subClient.subscribe("myDate");
 
 	subClient.on("message", function (channel, message) {
-		console.log('message: '+channel + " > " + message);
+		//console.log('message: '+channel + " > " + message);
 		socket.emit("msg",{key:channel,value:message});
 	});
 
@@ -159,14 +159,14 @@ var sockets = io.of('/pi').on('connection', function (socket) {
   	});
   	
   	socket.on('set',function(data){
-  		console.log(data);
+  		//console.log(data);
   		pubClient.set(data.key,data.value);
   	});
   	
   	socket.on('sub',function(data){
   		//TODO: type checking
   		for(var i=0; i<data.length; i++){
-  			console.log('subscribe: '+data[i]);
+  			//console.log('subscribe: '+data[i]);
   			subClient.subscribe(data[i]);
   		}
   	});
@@ -177,7 +177,7 @@ var sockets = io.of('/pi').on('connection', function (socket) {
   		} else {
 			//TODO: type checking
 			for(var i=0; i<data.length; i++){
-				console.log('unsubscribe: '+data[i]);
+				//console.log('unsubscribe: '+data[i]);
 				subClient.unsubscribe(data[i]);
 			}
   		}

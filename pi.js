@@ -11,7 +11,8 @@ var express = require('express')
 // fields
 ////////////////////////////////////////////////////////////////////////////
 var deviceId = "00:00:00:00:00:00";
-var socketAddress = 'http://5.157.248.122:3333';
+//var socketAddress = 'http://5.157.248.122:3333';
+var socketAddress = 'http://mrkhnstn.pi.jit.su:80';
 var socketNamespace = 'pi';
 var socketId = "";
 var socket = null;

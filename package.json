@@ -1,12 +1,21 @@
 {
-  "name": "application-name",
-  "version": "0.0.1",
-  "private": true,
+  "name": "pi",
+  "subdomain": "mrkhnstn.pi",
   "scripts": {
-    "start": "node app"
+    "start": "server.js"
+  },
+  "version": "0.0.0-1",
+  "engines": {
+    "node": "0.6.x"
   },
   "dependencies": {
-    "express": "3.0.0rc3",
-    "jade": "*"
-  }
+    "express": "3.0.x",
+    "jade": "0.27.x",
+    "socket.io": "0.9.x",
+    "redis": "0.7.x"
+  },
+  "noAnalyze": true,
+  "bundleDependencies": [
+    "redis"
+  ]
 }
