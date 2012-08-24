@@ -25,6 +25,9 @@ var arduino = null;
 var messageObjects = {};
 var pubSubObjects = {};
 
+var isPi = require('os').platform() == "linux";
+console.log('isPi',isPi);
+
 ////////////////////////////////////////////////////////////////////////////
 // setup express
 ////////////////////////////////////////////////////////////////////////////
@@ -75,7 +78,7 @@ server.listen(app.get('port'), function(){
 /////////////////////////////////////////////////////////////
 // Socket
 /////////////////////////////////////////////////////////////
-
+0
 var io_client = require('socket.io-client');
 
 function setupSocket(){
@@ -127,10 +130,7 @@ function setupSocket(){
 		if(arduino == null){
 			var arduinoId = 'arduino';
 			var subscribeToVars = ['led','pwm','servo'];
-			
-			//TODO: automatic detection of arduino
-			//var portName = '/dev/ttyACM0';
-			var portName = '/dev/tty.usbmodemfa131'
+			var portName = isPi ? '/dev/ttyACM0' : '/dev/tty.usbmodemfa131'
 			
 			arduino = require('./Arduino');
 			arduino.setup(deviceId,arduinoId,portName,subscribeToVars);

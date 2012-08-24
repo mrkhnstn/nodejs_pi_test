@@ -78,7 +78,28 @@ function msg (s,level,data){
 		var val = data.value;	
 		console.log('ArduinoModuleTest','msg',key,':',val);
 		sp.write(key+':'+val+'\r');
-	} catch(e){
-	
+	} catch(e){	
 	}
 }
+
+exports.detectPort = detectPort;
+function detectPort(fn){
+	try {
+		exec("ifconfig eth0", function(error, stdout, stderr){
+			if(stderr == ""){
+				//most likely RPi
+				fn('/dev/ttyACM0');
+			} else {
+				// try Mac
+				exec("ifconfig en0", function(error, stdout, stderr){
+					if(stderr == ""){
+						//most likely Mac
+						fn('/dev/tty.usbmodemfa131');
+					}
+				});
+			}
+		});
+	} catch(e){
+	}
+};
+
