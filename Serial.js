@@ -12,7 +12,6 @@ function setSocket(s){
 	socket = s;
 }
 
-
 exports.setup = setup;
 function setup(){
 	//TODO: automatic detection of arduino

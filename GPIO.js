@@ -85,8 +85,7 @@ function setup(_deviceId,_socket){
 			ready: f()
 		});
 	}
-	
-	
+
 }
 
 function syncGPIOs(){

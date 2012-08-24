@@ -1,3 +1,15 @@
+////////////////////////////////////////////////////////////////////////////
+// option
+////////////////////////////////////////////////////////////////////////////
+
+var redisHost = 'char.redistogo.com';
+var redisPort = 9072;
+var redisPw = '7159a9637d7891c263bab6b63697c704';
+
+////////////////////////////////////////////////////////////////////////////
+// start server
+////////////////////////////////////////////////////////////////////////////
+
 var express = require('express')
   , routes = require('./routes')
   , http = require('http')
@@ -80,7 +92,8 @@ var sockets = io.of('/pi').on('connection', function (socket) {
 	var id = null;
 	var isPi = false;
 	
-	//console.log('socket_id',socket.id);
+	// let clients know their own socket id 
+	// required for sending messages
 	socket.emit('socket_id',socket.id);
 	
 	socket.on('register_pi',function(data){
@@ -102,7 +115,6 @@ var sockets = io.of('/pi').on('connection', function (socket) {
 	
 	socket.on('message',function(data){
 		try {
-			//TODO check whether destination socket exists
 			sockets.sockets[data.to].emit('message',data);
 		} catch(e){
 		}
@@ -110,8 +122,20 @@ var sockets = io.of('/pi').on('connection', function (socket) {
 
 	///////////////////////////////////////////////////////////
 	// redis related
-	var pubClient = redis.createClient();
-	var subClient = redis.createClient();
+	var pubClient = redis.createClient(redisPort,redisHost);
+	var subClient = redis.createClient(redisPort,redisHost);
+
+	pubClient.auth(redisPw, function (err) {
+	   	if (err) { 
+	   		console.error("ERROR connecting to db",err); 
+		}
+	});
+	
+	subClient.auth(redisPw, function (err) {
+	   	if (err) { 
+	   		console.error("ERROR connecting to db",err); 
+		}
+	});
 
 	pubClient.on("error", function (err) {
 		console.error("Error " + err);
@@ -167,22 +191,5 @@ var sockets = io.of('/pi').on('connection', function (socket) {
   		}
   	});
 
-	///////////////////////////////////////////////////////////
-
-	// request gpio list from pi
-  	socket.emit('get_gpio',{}); 
-
-  	/*
-	// route pi gpio object to browsers
-  	socket.on('gpio',function(data){
-  		console.log("gpio:"+data.toString());
-  		browserSockets.emit('gpio',data);
-  	});
-  	
-
-  	socket.on('echo',function(data){
-  		browserSockets.emit('echo',data);
-  	});
-	*/
 });
 
