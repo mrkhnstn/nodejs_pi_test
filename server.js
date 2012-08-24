@@ -128,14 +128,14 @@ var sockets = io.of('/pi').on('connection', function (socket) {
 	console.log(socket.id,"authenticating pubClient"); 
 	pubClient.auth(redisPw, function (err) {
 	   	if (err) { 
-	   		console.log("pubClient auth error",socket.id,err); 
+	   		console.log(socket.id,"pubClient authentication error",err); 
 		} else {
 			console.log(socket.id,"pubClient authenticated"); 
 		}
 	});
 	
 	pubClient.on("error", function (err) {
-		console.log("pubClient on error",socket.id,err);
+		console.log(socket.id,"pubClient error",err);
 	});
 	
 	pubClient.on("ready", function () {
@@ -169,14 +169,14 @@ var sockets = io.of('/pi').on('connection', function (socket) {
 	console.log(socket.id,"subClient authenticating"); 
 	subClient.auth(redisPw, function (err) {
 	   	if (err) { 
-	   		console.log("subClient auth error",socket.id,err); 
+	   		console.log(socket.id,"subClient authentication error",err); 
 		} else {
-			console.log(socket.id,"pubClient authenticated"); 
+			console.log(socket.id,"subClient authenticated"); 
 		}
 	});
 
 	subClient.on("error", function (err) {
-		console.log("subClient on error",socket.id,err);
+		console.log(socket.id,"subClient error",err);
 	});
 
 	subClient.on("ready", function () {
