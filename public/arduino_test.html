@@ -54,9 +54,12 @@
 				var socket = io.connect('http://'+window.location.host+'/pi');
 
 				socket.on('connect',function(){
-					socket.emit('get_pi_list',{});
+					
 				});
 				
+				socket.on('ready',function(){
+					socket.emit('get_pi_list',{});
+				});
 				
 				socket.on('pi_list',function(data){
 					console.log('pi_list',data);

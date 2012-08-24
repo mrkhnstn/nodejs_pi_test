@@ -46,27 +46,40 @@ app.get('/', function(req, res){
 
 var server = http.createServer(app);
 server.listen(app.get('port'), function(){
-  console.log("Express server listening on port " + app.get('port'));
+  	console.log("Express server listening on port " + app.get('port'));
+	
+	console.log("creating pubClient"); 
+	pubClient = redis.createClient(redisPort,redisHost);
+	
+	console.log("authenticating pubClient"); 
+	pubClient.auth(redisPw, function (err) {
+	   	if (err) { 
+	   		console.log("pubClient authentication error",err); 
+		} else {
+			console.log("pubClient authenticated"); 
+		}
+	});
+	
+	pubClient.on("error", function (err) {
+		console.log("pubClient error",err);
+	});
+	
+	pubClient.on("ready", function () {
+		console.log("pubClient ready");
+		setupSocket();
+	});
+	
 });
 
 ////////////////////////////////////////////////////////////////////////////
 // socket.io
 ////////////////////////////////////////////////////////////////////////////
 
-var io = require('socket.io').listen(server);
-
-io.configure(function () {
-	io.set('transports', [
-		'websocket'
-	  , 'htmlfile'
-	  , 'xhr-polling'
-	  , 'jsonp-polling'
-	  ]);
-	io.disable('log');
-});
-
+var io;
 var piMap = {}
 var piList =[];
+var sockets;
+var pubClient;
 
 var registerPi = function(deviceId,socketId){
 	var a = {name:deviceId,socket:socketId};
@@ -87,59 +100,29 @@ var unregisterPi = function(deviceId){
 	sockets.emit('pi_list',piList);
 }
 
-var sockets = io.of('/pi').on('connection', function (socket) {
+function setupSocket(){
 
-	var id = null;
-	var isPi = false;
-	
-	// let clients know their own socket id 
-	// required for sending messages
-	socket.emit('socket_id',socket.id);
-	
-	socket.on('register_pi',function(data){
-		id = data;
-		isPi = true;
-		registerPi(id,socket.id);
-	});
+  	console.log("setting up socket.io");
+  	io = require('socket.io').listen(server);
 
-	socket.on('get_pi_list',function(data){
-		socket.emit('pi_list',piList);
+	io.configure(function () {
+		io.set('transports', [
+			'websocket'
+		  , 'htmlfile'
+		  , 'xhr-polling'
+		  , 'jsonp-polling'
+		  ]);
+		io.disable('log');
 	});
 
-	socket.on('disconnect',function(){
-		if(isPi)
-			unregisterPi(id,socket.id);
-		pubClient.quit();
-		subClient.quit();
-	});
+	sockets = io.of('/pi').on('connection', function (socket) {
 	
-	socket.on('message',function(data){
-		try {
-			sockets.sockets[data.to].emit('message',data);
-		} catch(e){
-		}
-	});
-
-	///////////////////////////////////////////////////////////
-	// redis related
-	console.log(socket.id,"creating pubClient"); 
-	var pubClient = redis.createClient(redisPort,redisHost);
-	
-	console.log(socket.id,"authenticating pubClient"); 
-	pubClient.auth(redisPw, function (err) {
-	   	if (err) { 
-	   		console.log(socket.id,"pubClient authentication error",err); 
-		} else {
-			console.log(socket.id,"pubClient authenticated"); 
-		}
-	});
-	
-	pubClient.on("error", function (err) {
-		console.log(socket.id,"pubClient error",err);
-	});
-	
-	pubClient.on("ready", function () {
-		console.log(socket.id,"pubClient ready");
+		var id = null;
+		var isPi = false;
+		
+		// let clients know their own socket id 
+		// required for sending messages
+		
 		
 		socket.on('get',function(data){
 			pubClient.get(data,function(err,reply){
@@ -159,54 +142,79 @@ var sockets = io.of('/pi').on('connection', function (socket) {
 			}
 		});
 		
-	});
+		socket.on('register_pi',function(data){
+			id = data;
+			isPi = true;
+			registerPi(id,socket.id);
+		});
 	
-	/////////////////////////////////////////////////////////
+		socket.on('get_pi_list',function(data){
+			socket.emit('pi_list',piList);
+		});
 	
-	console.log(socket.id,"creating subClient"); 
-	var subClient = redis.createClient(redisPort,redisHost);
-	
-	console.log(socket.id,"subClient authenticating"); 
-	subClient.auth(redisPw, function (err) {
-	   	if (err) { 
-	   		console.log(socket.id,"subClient authentication error",err); 
-		} else {
-			console.log(socket.id,"subClient authenticated"); 
-		}
-	});
-
-	subClient.on("error", function (err) {
-		console.log(socket.id,"subClient error",err);
-	});
-
-	subClient.on("ready", function () {
-		console.log(socket.id,"subClient ready");
-		
-		subClient.on("message", function (channel, message) {
-			//console.log('message: '+channel + " > " + message);
-			socket.emit("msg",{key:channel,value:message});
+		socket.on('disconnect',function(){
+			if(isPi)
+				unregisterPi(id,socket.id);
+			subClient.quit();
 		});
 		
-		socket.on('sub',function(data){
-			for(var i=0; i<data.length; i++){
-				//console.log('subscribe: '+data[i]);
-				subClient.subscribe(data[i]);
+		socket.on('message',function(data){
+			try {
+				sockets.sockets[data.to].emit('message',data);
+			} catch(e){
 			}
 		});
 	
-		socket.on('unsub',function(data){
-			if(data == null){
-				subClient.unsubscribe();
+		///////////////////////////////////////////////////////////
+		// redis related
+		/////////////////////////////////////////////////////////
+		
+		console.log(socket.id,"creating subClient"); 
+		var subClient = redis.createClient(redisPort,redisHost);
+		
+		console.log(socket.id,"subClient authenticating"); 
+		subClient.auth(redisPw, function (err) {
+			if (err) { 
+				console.log(socket.id,"subClient authentication error",err); 
 			} else {
-				for(var i=0; i<data.length; i++){
-					//console.log('unsubscribe: '+data[i]);
-					subClient.unsubscribe(data[i]);
-				}
+				console.log(socket.id,"subClient authenticated"); 
 			}
 		});
-		
-		
 	
+		subClient.on("error", function (err) {
+			console.log(socket.id,"subClient error",err);
+		});
+	
+		subClient.on("ready", function () {
+			socket.emit('socket_id',socket.id);
+			console.log(socket.id,"subClient ready");
+			
+			socket.emit("ready",{});
+			
+			subClient.on("message", function (channel, message) {
+				console.log('message: '+channel + " > " + message);
+				socket.emit("msg",{key:channel,value:message});
+			});
+			
+			socket.on('sub',function(data){
+				for(var i=0; i<data.length; i++){
+					console.log('subscribe: '+data[i]);
+					subClient.subscribe(data[i]);
+				}
+			});
+		
+			socket.on('unsub',function(data){
+				if(data == null){
+					subClient.unsubscribe();
+				} else {
+					for(var i=0; i<data.length; i++){
+						console.log('unsubscribe: '+data[i]);
+						subClient.unsubscribe(data[i]);
+					}
+				}
+			});
+		});
 	});
-});
+}
+
 

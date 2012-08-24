@@ -141,38 +141,3 @@ function msg (s,level,data){
 			gpios[pinId].setDirection(data.value);
 	}
 }
-
-/*
-var getGPIO = function(){
-	var a = [];
-		for(var i=0; i<gpios.length; i++){
-			var g = gpios[i];
-			if(g)
-				a.push({
-					pin:g.headerNum,
-					dir:g.direction,
-					val:g.value
-					});
-		}
-	return a;
-}
-
-var setGPIO = function(data){
-	//console.log("gpio:"+data.toString());
-	var pin = Number(data.pin);
-	if(gpioPinIds.indexOf(pin) != -1){
-		try {
-			var g = gpios[data.pin];
-			//console.log(g);
-			if(g.direction != data.dir){
-				g.setDirection(data.dir);
-			}
-			if(g.direction == "out"){
-				g.set(data.val);
-			}
-		} catch(e) {
-			console.error(e);
-		}
-	}
-}
-*/
