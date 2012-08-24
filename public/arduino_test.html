@@ -1,0 +1,166 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>Arduino Test</title>
+        <script src="javascripts/jquery-1.7.1.min.js"></script>
+		<script src="/socket.io/socket.io.js"></script>
+        <script>
+            $(function() {
+				var deviceId;
+				var deviceSelect = $('#device');
+				var ledCheckbox = $('#led');
+				var pwmSelect = $('#pwm');
+				var servoSelect = $('#servo');
+				
+				for(var i=0; i<=255; i += 10){
+					pwmSelect.append($('<option value="'+i+'">'+i+'</option>'));
+				}
+				pwmSelect.change(function(data){
+					socket.emit('pub',[{
+						key:deviceId+'/arduino/pwm',
+						value:pwmSelect.val()
+					}]);
+				});
+				
+				for(var i=20; i<=180; i += 10){
+					servoSelect.append($('<option value="'+i+'">'+i+'</option>'));
+				}
+				servoSelect.change(function(data){
+					socket.emit('pub',[{
+						key:deviceId+'/arduino/servo',
+						value:servoSelect.val()
+					}]);
+				});
+				
+				ledCheckbox.change(function(data){
+					socket.emit('pub',[{
+						key:deviceId+'/arduino/led',
+						value:ledCheckbox.attr('checked') == 'checked' ? 1 : 0
+					}]);
+				});
+				
+				deviceSelect.change(function(data){
+					updateDeviceId();
+				});
+				
+				
+				function validDevice(){
+					return deviceId != null;
+				}
+
+				// setup socket
+				var socket = io.connect('http://'+window.location.host+'/pi');
+
+				socket.on('connect',function(){
+					socket.emit('get_pi_list',{});
+				});
+				
+				
+				socket.on('pi_list',function(data){
+					console.log('pi_list',data);
+					var r = deviceSelect;
+					
+					r.html("");
+					
+					for(var i=0; i<data.length; i++)
+						r.append('<option value="'+data[i].name+'">'+data[i].name+'</option>');
+
+					if(deviceId != null)
+						r.val(deviceId);
+						
+					updateDeviceId();			
+				});
+				
+				function updateDeviceId(){
+					var r = deviceSelect;
+					var lastDeviceId = deviceId;
+					deviceId = r.val();
+					console.log('deviceId',deviceId);
+
+					var subVars = ["analog","button","pwm","led","servo"];
+					var a = [];
+					
+
+					if(lastDeviceId != deviceId){
+						
+						// new device selected
+
+						if(lastDeviceId != null){
+							// unsubscribe last device
+							for(var i=0; i<subVars.length; i++){
+								a[i] = lastDeviceId+'/arduino/'+subVars[i];
+							}
+							socket.emit('unsub',a);	
+						}
+						
+						// get and subscribe to variables from new device
+						for(var i=0; i<subVars.length; i++){
+								a[i] = deviceId+'/arduino/'+subVars[i];
+								socket.emit('get',a[i]);
+							}
+						socket.emit('sub',a);	
+						
+					}	
+				}
+				
+				socket.on('get', dataReceived);
+				socket.on('msg', dataReceived);
+				
+				function dataReceived(data){
+					console.log('msg: ' + data.key + ' > ' + data.value);
+					try {
+						var s = data.key.split('/');
+						if(s[0] === deviceId){
+							if(s[1] === 'arduino'){
+								switch(s[2]){
+									case "analog":
+										$('#potValue').html(data.value);
+										break;
+									case "button":
+										$('#buttonValue').html(data.value);
+										break;
+									case "servo":
+										servoSelect.val(data.value);
+										break;
+									case "led":
+										ledCheckbox.attr('checked',data.value == "1");
+										break;
+									case "pwm":
+										pwmSelect.val(data.value);
+										break;
+								}
+							}
+						}
+					} catch(e){
+						
+					}
+				}
+
+				
+            });
+        </script> 
+        <style>
+        	body {
+        		padding: 10px;
+        	}
+        </style>
+    </head>
+    <body>
+    	<div>
+    		<p>Test UI for communication with Arduino connected to Pi running ArduinoModuleTest</p>
+    		<hr/>
+    		<p>device: <select id='device'></select></p>
+    		<hr/>
+    		<p>OUTPUT</>
+    		<p>led:&nbsp;<input type="checkbox" id='led'></checkbox></p>
+    		<p>pwm:&nbsp;<select id='pwm'></select></p>
+    		<p>servo:&nbsp;<select id='servo'></select></p>
+    		<hr/>
+    		<p>INPUT</p>
+    		<p>pot:&nbsp;<span id='potValue'>0<span></p>
+    		<p>button:&nbsp;<span id='buttonValue'>0<span></p>
+    	</div>
+    </body>
+</html>

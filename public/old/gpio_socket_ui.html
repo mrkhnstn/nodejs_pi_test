@@ -1,0 +1,102 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>RPi GPIO</title>
+        <script src="javascripts/jquery-1.7.1.min.js"></script>
+		<script src="/socket.io/socket.io.js"></script>
+        <script>
+            $(function() {
+				console.log("GPIO Socket");
+				
+				var inited = false;
+				
+				var gpios = [];
+				
+				function initialize(data){
+
+					for(var i=0; i<data.length; i++){
+						var d = data[i];
+            			
+            			var g = {
+            				id: d.pin,
+            				div : $('<div></div>'),
+            				label : $('<span></span>'),
+            				inOutSelect : $('<select></select>'),
+            				valCheckbox : $('<input type="checkbox"></checkbox>')
+            			};
+            			
+            			gpios[g.id] = g;
+            			
+            			function uiChanged(){
+            				var a = g;
+            				return function(){
+            					sendGPIO(a);
+            				};
+            			}
+            			
+            			$('body').append(g.div);
+            			g.div.append(g.label);
+            			
+            			// create label
+            			g.label.html(d.pin);
+            			
+            			// create in/out select
+            			g.div.append(g.inOutSelect);
+            			g.inOutSelect.append('<option value="in">in</option>');
+            			g.inOutSelect.append('<option value="out">out</option>');
+            			g.inOutSelect.change(uiChanged());
+            			g.inOutSelect.val(d.dir);
+            			
+            			// create value checkbox
+            			g.div.append(g.valCheckbox);
+            			g.valCheckbox.attr('checked',d.val == 1);
+            			g.valCheckbox.change(uiChanged());
+					}
+					
+				}
+				
+				function sendGPIO(a){
+					var g = {pin:a.id,dir:a.inOutSelect.val(),val:a.valCheckbox.attr('checked') == 'checked' ? 1 : 0};
+					socket.emit("gpio",g);
+				}
+				
+				// setup socket
+				var socket = io.connect('http://'+window.location.host+'/pi');
+				
+				socket.on('gpio', function (data) {
+					console.log("gpio");
+					console.log(data);
+				
+					if(!inited){
+						initialize(data);
+						inited  = true;
+					} else {
+						// update ui
+						for(var i=0; i<data.length; i++){
+							var d = data[i];
+            				var g = gpios[d.pin];
+            				// create in/out select
+            				g.inOutSelect.val(d.dir);
+            				g.valCheckbox.attr('checked',d.val == 1);
+						}
+					}
+					
+				});
+            });
+        </script> 
+        <style>
+        	body {
+        		padding: 10px;
+        	}
+        	button {
+        		width: 200px;
+        		height: 25px;
+        		margin: 5px;
+        	}
+        </style>
+    </head>
+    <body>
+    </body>
+</html>
