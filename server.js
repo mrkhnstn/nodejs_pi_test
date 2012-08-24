@@ -122,74 +122,91 @@ var sockets = io.of('/pi').on('connection', function (socket) {
 
 	///////////////////////////////////////////////////////////
 	// redis related
+	console.log(socket.id,"creating pubClient"); 
 	var pubClient = redis.createClient(redisPort,redisHost);
-	var subClient = redis.createClient(redisPort,redisHost);
-
+	
+	console.log(socket.id,"authenticating pubClient"); 
 	pubClient.auth(redisPw, function (err) {
 	   	if (err) { 
-	   		console.error("ERROR connecting to db",err); 
+	   		console.log("pubClient auth error",socket.id,err); 
+		} else {
+			console.log(socket.id,"pubClient authenticated"); 
 		}
 	});
 	
+	pubClient.on("error", function (err) {
+		console.log("pubClient on error",socket.id,err);
+	});
+	
+	pubClient.on("ready", function () {
+		console.log(socket.id,"pubClient ready");
+		
+		socket.on('get',function(data){
+			pubClient.get(data,function(err,reply){
+				socket.emit('get',{key:data,value:reply});
+			});
+		});
+		
+		socket.on('set',function(data){
+			//console.log(data);
+			pubClient.set(data.key,data.value);
+		});
+		
+		socket.on('pub',function(data){
+			for(var i=0; i<data.length; i++){
+				pubClient.set(data[i].key,data[i].value);
+				pubClient.publish(data[i].key,data[i].value);
+			}
+		});
+		
+	});
+	
+	/////////////////////////////////////////////////////////
+	
+	console.log(socket.id,"creating subClient"); 
+	var subClient = redis.createClient(redisPort,redisHost);
+	
+	console.log(socket.id,"subClient authenticating"); 
 	subClient.auth(redisPw, function (err) {
 	   	if (err) { 
-	   		console.error("ERROR connecting to db",err); 
+	   		console.log("subClient auth error",socket.id,err); 
+		} else {
+			console.log(socket.id,"pubClient authenticated"); 
 		}
 	});
 
-	pubClient.on("error", function (err) {
-		console.error("Error " + err);
-	});
-
 	subClient.on("error", function (err) {
-		console.error("Error " + err);
+		console.log("subClient on error",socket.id,err);
 	});
 
-	//subClient.subscribe("myDate");
-
-	subClient.on("message", function (channel, message) {
-		//console.log('message: '+channel + " > " + message);
-		socket.emit("msg",{key:channel,value:message});
-	});
-
-	socket.on('get',function(data){
-  		pubClient.get(data,function(err,reply){
-  			socket.emit('get',{key:data,value:reply});
-  		});
-  	});
-  	
-  	socket.on('set',function(data){
-  		//console.log(data);
-  		pubClient.set(data.key,data.value);
-  	});
-  	
-  	socket.on('sub',function(data){
-  		//TODO: type checking
-  		for(var i=0; i<data.length; i++){
-  			//console.log('subscribe: '+data[i]);
-  			subClient.subscribe(data[i]);
-  		}
-  	});
-  	
-  	socket.on('unsub',function(data){
-  		if(data == null){
-  			ubClient.unsubscribe();
-  		} else {
-			//TODO: type checking
+	subClient.on("ready", function () {
+		console.log(socket.id,"subClient ready");
+		
+		subClient.on("message", function (channel, message) {
+			//console.log('message: '+channel + " > " + message);
+			socket.emit("msg",{key:channel,value:message});
+		});
+		
+		socket.on('sub',function(data){
 			for(var i=0; i<data.length; i++){
-				//console.log('unsubscribe: '+data[i]);
-				subClient.unsubscribe(data[i]);
+				//console.log('subscribe: '+data[i]);
+				subClient.subscribe(data[i]);
 			}
-  		}
-  	});
-  	
-  	socket.on('pub',function(data){
-  		//TODO: type checking
-  		for(var i=0; i<data.length; i++){
-  			pubClient.set(data[i].key,data[i].value);
-			pubClient.publish(data[i].key,data[i].value);
-  		}
-  	});
-
+		});
+	
+		socket.on('unsub',function(data){
+			if(data == null){
+				subClient.unsubscribe();
+			} else {
+				for(var i=0; i<data.length; i++){
+					//console.log('unsubscribe: '+data[i]);
+					subClient.unsubscribe(data[i]);
+				}
+			}
+		});
+		
+		
+	
+	});
 });
 
