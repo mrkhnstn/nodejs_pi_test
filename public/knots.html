@@ -1,0 +1,60 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>knots</title>
+        <link type="text/css" href="css/ui-lightness/jquery-ui-1.8.17.custom.css" rel="stylesheet" />
+        <script src="javascripts/underscore-min.js"></script>
+        <script src="javascripts/backbone-min.js"></script>
+        <script src="javascripts/jquery-1.7.1.min.js"></script>
+        <script src="javascripts/jquery-ui-1.8.17.custom.min.js"></script>
+        <script src="javascripts/knots.js"></script>
+		<script src="/socket.io/socket.io.js"></script>
+        <script>
+            $(function() {
+				// setup socket
+				var socket = io.connect('http://'+window.location.host+'/knots');
+				var redis = new Redis(socket);
+				
+				//var f1 = new Knot('test/f1',redis,{type:'float',default:5,min:0,max:10});
+				//var f2 = new Knot('test/f2',redis,{type:'float',default:75,min:0,max:100});
+				//var f3 = new Knot('test/f3',redis,{type:'float',default:54,min:0,max:75});
+				//var b1 = new Knot('test/b1',redis,{type:'boolean',default:1});
+				//var s1 = new Knot('test/s1',redis,{type:'string',default:'Hello World'});
+				//var l1 = new Knot('test/b1/l1',redis,{type:'select',list:[[1,'mark'],[2,'ken'],[3,'naoko'],[4,'guenter']],default:3});
+				
+				/*
+				//socket.emit('set',{path:'a/b/f1',value:6});
+				socket.emit('get',{path:'a/b/f1'});
+				socket.emit('setMeta',{path:'a/b/s1',meta:{type:'string'}});
+				socket.emit('set',{path:'a/b/s1',value:'hello'});
+				
+				socket.emit('getMetax',{path:'a/b/s1'});
+				socket.emit('getChildren',{path:'a/b'});
+				*/
+				
+				socket.on('connect',function(){
+					console.log('connected');
+					kui = new KUI('',$('body'),redis);
+				});
+            });
+        </script> 
+        <style>
+        	body {
+        		padding: 5px;
+        		margin: 5px;
+        	}
+        	div {
+        		margin : 5px;
+        		border: 1px solid #EEEEEE;
+        	}
+        	.KUI_element_panel {
+        		margin: 5px 0px 5px 20px;
+        		border: 1px solid #000000;
+        	}
+        </style>
+    </head>
+    <body>
+    </body>
+</html>
