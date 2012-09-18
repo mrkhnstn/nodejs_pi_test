@@ -2,37 +2,34 @@
 <html> 
 	<head> 
 	<title>Knots</title> 
-	
 	<meta name="viewport" content="width=device-width, initial-scale=1"> 
-
 	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.1.1/jquery.mobile-1.1.1.min.css" />
 	<script src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
 	<script src="http://code.jquery.com/mobile/1.1.1/jquery.mobile-1.1.1.min.js"></script>
-	<script src="javascripts/underscore-min.js"></script>
-    <script src="javascripts/backbone-min.js"></script>
-    <script src="javascripts/knots.js"></script>
-	<script src="/socket.io/socket.io.js"></script>
-	<script src="javascripts/mknots.js"></script>
 </head> 
 <body> 
 <div data-role="page">
-
 	<div data-role="header">
-		<h1>Knots</h1>
+		<h1>Login</h1>
 	</div><!-- /header -->
-	
 	<div data-role="content">	
-		<form>
-  		<ul data-role="listview" data-inset="false" id="main-list">
-			<li><a href="#/_">root</a></li>
-			<li><a href="#/_/test">test</a></li>
-    	</ul>
+		<form action="login" method="post">
+			<div data-role="fieldcontain">
+				<label for="user">Username</label>
+				<input type="text" name="user" id="user" data-mini="false" />
+			</div>
+			<div data-role="fieldcontain">
+				<label for="password">Password</label>
+				<input type="password" name="password" id="password" data-mini="false" />
+			</div>
+			<div data-role="fieldcontain">
+				<label for="submit"></label>
+				<input type="submit" name="submit" id="submit" value="Submit" data-theme="a"/>
+			</div>
     	</form>
 	</div><!-- /content -->
-
 	<!--div data-role="footer">
 	</div--><!-- /footer -->
 </div><!-- /page -->
-
 </body>
 </html>

@@ -10,7 +10,6 @@ var RedisSocketServer = require('./RedisSocketServer.js').RedisSocketServer;
 
 var redisBase;
 var redisSocketServer;
-var arduinoTest;
 
 ////////////////////////////////////////////////////////////////////////////
 // start server
@@ -19,7 +18,7 @@ var arduinoTest;
 var app = express();
 
 app.configure(function(){
-  app.set('port', process.env.PORT || 3000);
+  app.set('port', process.env.PORT || 3333);
   app.set('views', __dirname + '/views');
   app.set('view engine', 'jade');
   app.use(express.favicon());
@@ -34,17 +33,34 @@ app.configure('development', function(){
   app.use(express.errorHandler());
 });
 
-//app.get('/', routes.index);
+app.get('/', routes.index);
 
-app.get('/', function(req, res){
-  res.send('server says hello :)');
+app.get('/knots',function(req,res){
+	res.render('knots',{path:''});
+});
+
+app.get('/knots/*',function(req,res){
+	if(req.params.length > 0){
+		res.render('knots',{path:req.params[0]});
+	} else {
+		res.render('knots',{path:''});
+	}
 });
 
 /*
-app.get('/get_children'){
-	res.send({a:0,b:1});
+app.get('/', function(req, res){
+  res.render('index',
+  {
+  	
+  });
 });
 */
+
+app.post('/login', function(req, res){
+	console.log('user:'+req.body.user);
+	console.log('password:'+req.body.password);
+   	res.send('login success');
+});
 
 ////////////////////////////////////////////////////////////////////////////
 // start server
@@ -53,29 +69,22 @@ app.get('/get_children'){
 var server = http.createServer(app);
 server.listen(app.get('port'), function(){
   	console.log("Express server listening on port " + app.get('port'));
-	redisBase = new RedisBase('5.157.248.122',6379);
+	redisBase = new RedisBase();
 	redisBase.on('ready',function(){
 		console.log('create redisSocketServer');
 		redisSocketServer = new RedisSocketServer(redisBase);
-		//setupSocket();
+		setupSocket();
 	});
 	
-	var f2 = new Knot('test/f2',redisBase);
-	f2.on('change',function(data){
-		console.log('f2',data);
+	var f1 = new Knot('a/b/f1',redisBase,{default:1,type:'int',min:1,max:10});
+	f1.on("change",function(f){
+		console.log('f1,changed',f);
 	});
-	f2.on('ready',function(){
-		f2.set(77);
-	});
-	var f3 = new Knot('test/f3',redisBase);
-	var b1 = new Knot('test/b1',redisBase);
-	var s1 = new Knot('test/s1',redisBase);
-	var l1 = new Knot('test/b1/l1',redisBase);
 	
-	//var portName = isPi ? '/dev/ttyACM0' : '/dev/tty.usbmodemfa131'
-	var portName = '/dev/tty.usbmodemfa131';
-	arduinoTest = require('./ArduinoKnotTest.js');
-	arduinoTest.setup("arduino_test",portName,redisBase);
+	var f1_2 = new Knot('a/b/f1',redisBase);
+	f1_2.on("change",function(f){
+		console.log('f1_2,changed',f);
+	});
 });
 
 ////////////////////////////////////////////////////////////////////////////

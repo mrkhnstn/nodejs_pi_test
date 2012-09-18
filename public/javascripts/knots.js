@@ -90,7 +90,7 @@ Redis.prototype.unsubscribe = function(path,listener){
 	delete this.subscribeListeners[path];
 }
 
-Redis.prototype.removeListeners(path){
+Redis.prototype.removeListeners = function(path){
 	//TODO: implement
 }
 
@@ -107,9 +107,11 @@ Knot.prototype.initialize = function(path,redis,params){
 
 	this.path = path;
 	this.redis = redis;
+	this.isReady = false;
 
 	var triggerReady = _.after(2,_.bind(function(){
 		//console.log('knot ready');
+		this.isReady = true;
 		this.trigger('ready');
 	},this));
 	

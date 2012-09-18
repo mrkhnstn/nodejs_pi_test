@@ -1,0 +1,23 @@
+doctype 5
+html
+	head
+		title= path
+		meta(name='viewport', content='width=device-width, initial-scale=1')
+		link(rel='stylesheet', href='http://code.jquery.com/mobile/1.1.1/jquery.mobile-1.1.1.min.css')
+		script(src='http://code.jquery.com/jquery-1.7.1.min.js')
+		script(src='http://code.jquery.com/mobile/1.1.1/jquery.mobile-1.1.1.min.js')
+		script(src='/javascripts/underscore-min.js')
+		script(src='/javascripts/backbone-min.js')
+		script(src='/javascripts/knots.js')
+		script(src='/socket.io/socket.io.js')
+		script(src='/javascripts/mknots.js')
+	body
+		div(data-role='page')
+			//
+				div(data-role='header')
+					h1 knots
+				div(data-role='content')
+					form
+						ul(data-role='listview', data-inset='false')
+							li
+								a(href='#/knots') root
