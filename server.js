@@ -1,20 +1,20 @@
-////////////////////////////////////////////////////////////////////////////
-// option
-////////////////////////////////////////////////////////////////////////////
-
-var redisHost = 'char.redistogo.com';
-var redisPort = 9072;
-var redisPw = '7159a9637d7891c263bab6b63697c704';
-
-////////////////////////////////////////////////////////////////////////////
-// start server
-////////////////////////////////////////////////////////////////////////////
-
 var express = require('express')
   , routes = require('./routes')	
   , http = require('http')
   , path = require('path')
-  , redis = require("redis");
+  , _ = require('underscore');
+
+/*
+var Knot = require('./Knot.js').Knot;
+var RedisBase = require('./RedisBase.js').RedisBase;
+var RedisSocketServer = require('./RedisSocketServer.js').RedisSocketServer;
+
+var redisBase;
+var redisSocketServer;
+*/
+////////////////////////////////////////////////////////////////////////////
+// start server
+////////////////////////////////////////////////////////////////////////////
 
 var app = express();
 
@@ -34,11 +34,38 @@ app.configure('development', function(){
   app.use(express.errorHandler());
 });
 
-//app.get('/', routes.index);
+app.get('/', routes.index);
 
-app.get('/', function(req, res){
-  res.send('server says hello :)');
+/*
+app.get('/knots',function(req,res){
+	res.render('knots',{path:''});
 });
+
+app.get('/knots/*',function(req,res){
+	if(req.params.length > 0){
+		res.render('knots',{path:req.params[0]});
+	} else {
+		res.render('knots',{path:''});
+	}
+});
+*/
+
+/*
+app.get('/', function(req, res){
+  res.render('index',
+  {
+  	
+  });
+});
+*/
+
+/*
+app.post('/login', function(req, res){
+	console.log('user:'+req.body.user);
+	console.log('password:'+req.body.password);
+   	res.send('login success');
+});
+*/
 
 ////////////////////////////////////////////////////////////////////////////
 // start server
@@ -47,58 +74,33 @@ app.get('/', function(req, res){
 var server = http.createServer(app);
 server.listen(app.get('port'), function(){
   	console.log("Express server listening on port " + app.get('port'));
-	
-	console.log("creating pubClient"); 
-	pubClient = redis.createClient(redisPort,redisHost);
-	
-	console.log("authenticating pubClient"); 
-	pubClient.auth(redisPw, function (err) {
-	   	if (err) { 
-	   		console.log("pubClient authentication error",err); 
-		} else {
-			console.log("pubClient authenticated"); 
-		}
-	});
-	
-	pubClient.on("error", function (err) {
-		console.log("pubClient error",err);
-	});
-	
-	pubClient.on("ready", function () {
-		console.log("pubClient ready");
+  	/*
+	redisBase = new RedisBase();
+	redisBase.on('ready',function(){
+		console.log('create redisSocketServer');
+		redisSocketServer = new RedisSocketServer(redisBase);
 		setupSocket();
 	});
 	
+	var f1 = new Knot('a/b/f1',redisBase,{default:1,type:'int',min:1,max:10});
+	f1.on("change",function(f){
+		console.log('f1,changed',f);
+	});
+	
+	var f1_2 = new Knot('a/b/f1',redisBase);
+	f1_2.on("change",function(f){
+		console.log('f1_2,changed',f);
+	});
+	*/
 });
 
 ////////////////////////////////////////////////////////////////////////////
 // socket.io
 ////////////////////////////////////////////////////////////////////////////
 
+/*
 var io;
-var piMap = {}
-var piList =[];
 var sockets;
-var pubClient;
-
-var registerPi = function(deviceId,socketId){
-	var a = {name:deviceId,socket:socketId};
-	piMap[deviceId] = a;
-	piList = [];
-	for(n in piMap){
-		piList.push(piMap[n]);
-	}
-	sockets.emit('pi_list',piList);
-}
-
-var unregisterPi = function(deviceId){
-	delete piMap[deviceId];
-	piList = []
-	for(n in piMap){
-		piList.push(n);
-	}
-	sockets.emit('pi_list',piList);
-}
 
 function setupSocket(){
 
@@ -115,106 +117,11 @@ function setupSocket(){
 		io.disable('log');
 	});
 
-	sockets = io.of('/pi').on('connection', function (socket) {
-	
-		var id = null;
-		var isPi = false;
-		
-		// let clients know their own socket id 
-		// required for sending messages
-		
-		
-		socket.on('get',function(data){
-			pubClient.get(data,function(err,reply){
-				socket.emit('get',{key:data,value:reply});
-			});
-		});
-		
-		socket.on('set',function(data){
-			//console.log(data);
-			pubClient.set(data.key,data.value);
-		});
-		
-		socket.on('pub',function(data){
-			for(var i=0; i<data.length; i++){
-				pubClient.set(data[i].key,data[i].value);
-				pubClient.publish(data[i].key,data[i].value);
-			}
-		});
-		
-		socket.on('register_pi',function(data){
-			id = data;
-			isPi = true;
-			registerPi(id,socket.id);
-		});
-	
-		socket.on('get_pi_list',function(data){
-			socket.emit('pi_list',piList);
-		});
-	
-		socket.on('disconnect',function(){
-			if(isPi)
-				unregisterPi(id,socket.id);
-			subClient.quit();
-		});
-		
-		socket.on('message',function(data){
-			try {
-				sockets.sockets[data.to].emit('message',data);
-			} catch(e){
-			}
-		});
-	
-		///////////////////////////////////////////////////////////
-		// redis related
-		/////////////////////////////////////////////////////////
-		
-		console.log(socket.id,"creating subClient"); 
-		var subClient = redis.createClient(redisPort,redisHost);
-		
-		console.log(socket.id,"subClient authenticating"); 
-		subClient.auth(redisPw, function (err) {
-			if (err) { 
-				console.log(socket.id,"subClient authentication error",err); 
-			} else {
-				console.log(socket.id,"subClient authenticated"); 
-			}
-		});
-	
-		subClient.on("error", function (err) {
-			console.log(socket.id,"subClient error",err);
-		});
-	
-		subClient.on("ready", function () {
-			socket.emit('socket_id',socket.id);
-			console.log(socket.id,"subClient ready");
-			
-			socket.emit("ready",{});
-			
-			subClient.on("message", function (channel, message) {
-				console.log('message: '+channel + " > " + message);
-				socket.emit("msg",{key:channel,value:message});
-			});
-			
-			socket.on('sub',function(data){
-				for(var i=0; i<data.length; i++){
-					console.log('subscribe: '+data[i]);
-					subClient.subscribe(data[i]);
-				}
-			});
-		
-			socket.on('unsub',function(data){
-				if(data == null){
-					subClient.unsubscribe();
-				} else {
-					for(var i=0; i<data.length; i++){
-						console.log('unsubscribe: '+data[i]);
-						subClient.unsubscribe(data[i]);
-					}
-				}
-			});
-		});
+	sockets = io.of('/knots').on('connection', function (socket) {
+		redisSocketServer.connect(socket);
 	});
 }
+
+*/
 
 
