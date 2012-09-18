@@ -1,3 +1,7 @@
-engine=nodejs
+database_user=nodejspi
+addons=(redis)
 nodejs_proxy=Y
+database_name=nodejspi
+database_password=
 nodejs_port=3333
+engine=nodejs
