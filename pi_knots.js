@@ -86,7 +86,7 @@ server.listen(app.get('port'), function(){
 		console.log("Device ID",deviceId);
 		var portName = isPi ? '/dev/ttyACM0' : '/dev/tty.usbmodemfa131'
 		arduinoTest = require('./ArduinoKnotTest.js');
-		arduinoTest.setup(deviceId,portName,redisBase);
+		arduinoTest.setup(deviceId+'/arduino_test',portName,redisBase);
 	});
 	
 });
