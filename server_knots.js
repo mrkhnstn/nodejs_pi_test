@@ -69,7 +69,8 @@ app.post('/login', function(req, res){
 var server = http.createServer(app);
 server.listen(app.get('port'), function(){
   	console.log("Express server listening on port " + app.get('port'));
-	redisBase = new RedisBase();
+  	var webbynodeIP = '173.246.41.66';
+	redisBase = new RedisBase(webbynodeIP);
 	redisBase.on('ready',function(){
 		console.log('create redisSocketServer');
 		redisSocketServer = new RedisSocketServer(redisBase);

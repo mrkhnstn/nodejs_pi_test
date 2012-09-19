@@ -53,7 +53,9 @@ app.get('/get_children'){
 var server = http.createServer(app);
 server.listen(app.get('port'), function(){
   	console.log("Express server listening on port " + app.get('port'));
-	redisBase = new RedisBase('5.157.248.122',6379);
+  	var webbynodeIP = '173.246.41.66';
+  	var hamachiMacProIP = '5.157.248.122';
+	redisBase = new RedisBase(webbynodeIP,6379);
 	redisBase.on('ready',function(){
 		console.log('create redisSocketServer');
 		redisSocketServer = new RedisSocketServer(redisBase);
