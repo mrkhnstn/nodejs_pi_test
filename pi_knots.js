@@ -62,6 +62,7 @@ server.listen(app.get('port'), function(){
 		//setupSocket();
 	});
 	
+	/*
 	var f2 = new Knot('test/f2',redisBase);
 	f2.on('change',function(data){
 		console.log('f2',data);
@@ -73,12 +74,21 @@ server.listen(app.get('port'), function(){
 	var b1 = new Knot('test/b1',redisBase);
 	var s1 = new Knot('test/s1',redisBase);
 	var l1 = new Knot('test/b1/l1',redisBase);
+	*/
 	
-	var isPi = require('os').platform() == "linux";
-	var portName = isPi ? '/dev/ttyACM0' : '/dev/tty.usbmodemfa131'
-	//var portName = '/dev/tty.usbmodemfa131';
-	arduinoTest = require('./ArduinoKnotTest.js');
-	arduinoTest.setup("arduino_test",portName,redisBase);
+	
+	
+	// get device id
+ 	var MAC = require('./MAC');
+  	MAC.get(function(mac){
+		var deviceId = mac;
+		var isPi = require('os').platform() == "linux";
+		console.log("Device ID",deviceId);
+		var portName = isPi ? '/dev/ttyACM0' : '/dev/tty.usbmodemfa131'
+		arduinoTest = require('./ArduinoKnotTest.js');
+		arduinoTest.setup(deviceId,portName,redisBase);
+	});
+	
 });
 
 ////////////////////////////////////////////////////////////////////////////
