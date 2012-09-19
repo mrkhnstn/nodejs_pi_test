@@ -74,8 +74,9 @@ server.listen(app.get('port'), function(){
 	var s1 = new Knot('test/s1',redisBase);
 	var l1 = new Knot('test/b1/l1',redisBase);
 	
-	//var portName = isPi ? '/dev/ttyACM0' : '/dev/tty.usbmodemfa131'
-	var portName = '/dev/tty.usbmodemfa131';
+	var isPi = require('os').platform() == "linux";
+	var portName = isPi ? '/dev/ttyACM0' : '/dev/tty.usbmodemfa131'
+	//var portName = '/dev/tty.usbmodemfa131';
 	arduinoTest = require('./ArduinoKnotTest.js');
 	arduinoTest.setup("arduino_test",portName,redisBase);
 });
