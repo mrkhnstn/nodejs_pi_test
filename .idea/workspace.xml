@@ -2,23 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="44432ed8-c899-4492-8772-76af2e4a0b7c" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/nodejs_pi.iml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/.name" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/encodings.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/jsLibraryMappings.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/modules.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/scopes/scope_settings.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/arduino/SimpleTest/SimpleTest.ino" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/testbed_knots.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/testbed_log.js" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/arduino/ArduinoModuleTest/ArduinoModuleTest.pde" afterPath="" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/pi_knots.js" afterPath="$PROJECT_DIR$/pi_knots.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/public/javascripts/mknots.js" afterPath="$PROJECT_DIR$/public/javascripts/mknots.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server.js" afterPath="$PROJECT_DIR$/server.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/views/knots.jade" afterPath="$PROJECT_DIR$/views/knots.jade" />
     </list>
     <ignored path="nodejs_pi.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -52,16 +37,25 @@
           <file leaf-file-name="pi_knots.js" pinned="false" current="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/pi_knots.js">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="58" column="0" selection-start="1800" selection-end="1800" vertical-scroll-proportion="0.0">
+                <state line="88" column="4" selection-start="2548" selection-end="2548" vertical-scroll-proportion="0.0">
                   <folding />
                 </state>
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="knots.jade" pinned="false" current="true" current-in-tab="true">
+          <file leaf-file-name="knots.jade" pinned="false" current="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/views/knots.jade">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="9" column="50" selection-start="432" selection-end="432" vertical-scroll-proportion="0.23037542">
+                <state line="22" column="51" selection-start="755" selection-end="755" vertical-scroll-proportion="0.0">
+                  <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="ArduinoKnotTest.js" pinned="false" current="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/ArduinoKnotTest.js">
+              <provider selected="true" editor-type-id="text-editor">
+                <state line="31" column="36" selection-start="704" selection-end="704" vertical-scroll-proportion="0.21129033">
                   <folding />
                 </state>
               </provider>
@@ -74,16 +68,25 @@
           <file leaf-file-name="server.js" pinned="false" current="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/server.js">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="26" column="36" selection-start="834" selection-end="834" vertical-scroll-proportion="0.0">
+                <state line="119" column="0" selection-start="2900" selection-end="2900" vertical-scroll-proportion="0.0">
                   <folding />
                 </state>
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="ArduinoKnotTest.js" pinned="false" current="false" current-in-tab="true">
+          <file leaf-file-name="ArduinoKnotTest.js" pinned="false" current="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/ArduinoKnotTest.js">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="20" column="42" selection-start="478" selection-end="478" vertical-scroll-proportion="0.5008347">
+                <state line="37" column="7" selection-start="768" selection-end="768" vertical-scroll-proportion="0.0">
+                  <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="pi_knots.js" pinned="false" current="true" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/pi_knots.js">
+              <provider selected="true" editor-type-id="text-editor">
+                <state line="57" column="24" selection-start="1799" selection-end="1799" vertical-scroll-proportion="0.2843602">
                   <folding />
                 </state>
               </provider>
@@ -105,6 +108,7 @@
       <command text="ls" />
       <command text="node server.js" />
       <command text="git add ." />
+      <command text="node pi_knots.js" />
     </commandsHistory>
   </component>
   <component name="Git.Settings">
@@ -180,6 +184,9 @@
     <property name="WebServerToolWindowFactoryState" value="false" />
   </component>
   <component name="RunManager">
+    <configuration default="true" type="NodeJSConfigurationType" factoryName="Node.js" working-dir="$PROJECT_DIR$">
+      <method />
+    </configuration>
     <list size="0" />
   </component>
   <component name="ShelveChangesManager" show_recycled="false" />
@@ -206,6 +213,11 @@
       <created>1348588566499</created>
       <updated>1348588566499</updated>
     </task>
+    <task id="LOCAL-00001" summary="started working with web storm">
+      <created>1348652683895</created>
+      <updated>1348652683895</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TodoView" selected-index="0">
@@ -232,11 +244,11 @@
     <frame x="0" y="22" width="1920" height="1054" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.3290461" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.2926045" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3290461" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.11228255" sideWeight="0.27224007" order="1" side_tool="true" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.11228255" sideWeight="0.39121115" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.11228255" sideWeight="0.28724545" order="1" side_tool="true" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.11228255" sideWeight="0.41264737" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="true" content_ui="tabs" />
@@ -257,8 +269,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="OFFER_MOVE_TO_ANOTHER_CHANGELIST_ON_PARTIAL_COMMIT" value="true" />
-    <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="true" />
-    <option name="CHECK_NEW_TODO" value="true" />
+    <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
+    <option name="CHECK_NEW_TODO" value="false" />
     <option name="myTodoPanelSettings">
       <value>
         <are-packages-shown value="false" />
@@ -313,13 +325,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/server.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="31" column="40" selection-start="962" selection-end="962" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/pi.js">
       <provider selected="true" editor-type-id="text-editor">
         <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
@@ -329,23 +334,37 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ArduinoKnotTest.js">
+    <entry file="file://$PROJECT_DIR$/ArduinoModuleTest.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="20" column="42" selection-start="478" selection-end="478" vertical-scroll-proportion="0.5008347">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/pi_knots.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="58" column="0" selection-start="1800" selection-end="1800" vertical-scroll-proportion="0.0">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="-0.91943127">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/views/knots.jade">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="9" column="50" selection-start="432" selection-end="432" vertical-scroll-proportion="0.23037542">
+        <state line="22" column="51" selection-start="755" selection-end="755" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="119" column="0" selection-start="2900" selection-end="2900" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ArduinoKnotTest.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="37" column="7" selection-start="768" selection-end="768" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pi_knots.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="57" column="24" selection-start="1799" selection-end="1799" vertical-scroll-proportion="0.2843602">
           <folding />
         </state>
       </provider>

@@ -56,12 +56,19 @@ server.listen(app.get('port'), function(){
 		//console.log('create redisSocketServer');
 		//redisSocketServer = new RedisSocketServer(redisBase);
 		//setupSocket();
-		
+
+
+
 		var MAC = require('./MAC');
   		MAC.get(function(mac){
   	
 			var deviceId = mac;
 			// set the device id of this  pi to its mac address
+
+            // setup continuous pinging of server
+            pingKnot = new Knot(deviceId+'/ping',redisBase,{type:'string'});
+            pingServer();
+            setInterval(pingServer,10000);
 			
 			var isPi = require('os').platform() == "linux"; 
 			// if running on linux then consider this to be a pi
@@ -77,6 +84,10 @@ server.listen(app.get('port'), function(){
  	
 	
 });
+
+function pingServer(){
+    pingKnot.set((new Date()).toISOString());
+}
 
 ////////////////////////////////////////////////////////////////////////////
 // socket.io (not in use at the moment)
