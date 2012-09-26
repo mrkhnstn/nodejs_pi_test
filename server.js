@@ -77,6 +77,7 @@ server.listen(app.get('port'), function(){
 		setupSocket();
 	});
 	
+	/*
 	var f1 = new Knot('a/b/f1',redisBase,{default:1,type:'int',min:1,max:10});
 	f1.on("change",function(f){
 		console.log('f1,changed',f);
@@ -86,6 +87,7 @@ server.listen(app.get('port'), function(){
 	f1_2.on("change",function(f){
 		console.log('f1_2,changed',f);
 	});
+	*/
 });
 
 ////////////////////////////////////////////////////////////////////////////

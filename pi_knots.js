@@ -7,7 +7,6 @@ var express = require('express')
 var Knot = require('./Knot.js').Knot;
 var RedisBase = require('./RedisBase.js').RedisBase;
 var RedisSocketServer = require('./RedisSocketServer.js').RedisSocketServer;
-
 var redisBase;
 var redisSocketServer;
 var arduinoTest;
@@ -40,12 +39,6 @@ app.get('/', function(req, res){
   res.send('server says hello :)');
 });
 
-/*
-app.get('/get_children'){
-	res.send({a:0,b:1});
-});
-*/
-
 ////////////////////////////////////////////////////////////////////////////
 // start server
 ////////////////////////////////////////////////////////////////////////////
@@ -53,46 +46,40 @@ app.get('/get_children'){
 var server = http.createServer(app);
 server.listen(app.get('port'), function(){
   	console.log("Express server listening on port " + app.get('port'));
+  	
+  	//TODO:  the express server is actually not required for knots
   	var webbynodeIP = '173.246.41.66';
   	var hamachiMacProIP = '5.157.248.122';
 	redisBase = new RedisBase(webbynodeIP,6379);
+	
 	redisBase.on('ready',function(){
-		console.log('create redisSocketServer');
-		redisSocketServer = new RedisSocketServer(redisBase);
+		//console.log('create redisSocketServer');
+		//redisSocketServer = new RedisSocketServer(redisBase);
 		//setupSocket();
+		
+		var MAC = require('./MAC');
+  		MAC.get(function(mac){
+  	
+			var deviceId = mac;
+			// set the device id of this  pi to its mac address
+			
+			var isPi = require('os').platform() == "linux"; 
+			// if running on linux then consider this to be a pi
+			
+			var portName = isPi ? '/dev/ttyACM0' : '/dev/tty.usbmodemfa131'
+			//serial portname for arduino differs on pi and mac
+			 
+			arduinoTest = require('./ArduinoKnotTest.js');
+			arduinoTest.setup(deviceId+'/arduino_test',portName,redisBase);
+		});
 	});
-	
-	/*
-	var f2 = new Knot('test/f2',redisBase);
-	f2.on('change',function(data){
-		console.log('f2',data);
-	});
-	f2.on('ready',function(){
-		f2.set(77);
-	});
-	var f3 = new Knot('test/f3',redisBase);
-	var b1 = new Knot('test/b1',redisBase);
-	var s1 = new Knot('test/s1',redisBase);
-	var l1 = new Knot('test/b1/l1',redisBase);
-	*/
-	
-	
-	
-	// get device id
- 	var MAC = require('./MAC');
-  	MAC.get(function(mac){
-		var deviceId = mac;
-		var isPi = require('os').platform() == "linux";
-		console.log("Device ID",deviceId);
-		var portName = isPi ? '/dev/ttyACM0' : '/dev/tty.usbmodemfa131'
-		arduinoTest = require('./ArduinoKnotTest.js');
-		arduinoTest.setup(deviceId+'/arduino_test',portName,redisBase);
-	});
+
+ 	
 	
 });
 
 ////////////////////////////////////////////////////////////////////////////
-// socket.io
+// socket.io (not in use at the moment)
 ////////////////////////////////////////////////////////////////////////////
 
 var io;
@@ -118,14 +105,19 @@ function setupSocket(){
 	});
 }
 
-
-
-
-
 /*
-
-
-
+var f2 = new Knot('test/f2',redisBase);
+f2.on('change',function(data){
+	console.log('f2',data);
+});
+f2.on('ready',function(){
+	f2.set(77);
+});
+var f3 = new Knot('test/f3',redisBase);
+var b1 = new Knot('test/b1',redisBase);
+var s1 = new Knot('test/s1',redisBase);
+var l1 = new Knot('test/b1/l1',redisBase);
+	
 var f1 = new Knot('a/b/f1',redis,{default:1,type:'int',min:1,max:10});
 f1.on("change",function(f){
 	console.log('f1,changed',f);
@@ -134,13 +126,13 @@ f1.on("change",function(f){
 var log = _.bind(f1.set, f1);
 _.delay(log, 1000, 6);
 _.delay(log, 3000, 7);
-*/
 
-/*
 console.log('f1====',f1);
 var f2 = new Knot('a/b/f2',{default:2,min:1,max:10});
 var f3 = new Knot('f3',{min:1,max:5});
 var f4 = new Knot('a/b/c/f4',{min:1,max:5});
+
+var select = new Knot('test/select',{default:0, values[0,1,2,3], keys['mark','dave','nadine','andy']})
 */
 
 //f1.set(4);

@@ -24,6 +24,7 @@ var socket = io.connect('http://'+window.location.host+'/knots');
 var redis = new Redis(socket);
 socket.on('connect',function(){
 	console.log('socket connected');
+	//TODO: reconnection routine
 });
 
 // Listen for any attempts to call changePage().
@@ -34,9 +35,11 @@ $(document).bind( "pagebeforechange", function( e, data ) {
 	
 	if(!inited){
 		inited = true;
+
 		console.log(data.toPage.context.URL);
 		var u = $.mobile.path.parseUrl( data.toPage.context.URL );
 		var a = u.pathname.split('/');
+
 		if(a.length >= 2){
 			if(a[1] === 'knots'){
 				var b = "";
@@ -53,12 +56,10 @@ $(document).bind( "pagebeforechange", function( e, data ) {
 	}
 	
 	if ( typeof data.toPage === "string" ) {
-		// We are being asked to load a page by URL, but we only
-		// want to handle URLs that request the data for a specific
-		// category.
 		
 		var u = $.mobile.path.parseUrl( data.toPage );
 		var a = u.pathname.split('/');
+		console.log('parsed url',u,a);
 		
 		if(a.length >= 2){
 			if(a[1] === 'knots'){
@@ -73,12 +74,11 @@ $(document).bind( "pagebeforechange", function( e, data ) {
 			}
 		}
 		
-		console.log('parsed url',u,a);
+		
 		
 		e.preventDefault();
 	} else if(typeof data.toPage === 'object'){
 		/*
-		
 		*/
 	}
 });
@@ -127,10 +127,7 @@ var getChildren = function(path,url,options){
 			var $li;
 			var childPath = path==''?n:path+"/"+n;
 			if(childDef.children){
-				
 				$li = $('<li><a href="#/knots/'+childPath+'">'+n+'</a></li>').appendTo($list);
-			
-				
 			} else {
 				if(_.has(childDef,'type')){
 					switch(childDef.type){
@@ -170,10 +167,7 @@ var getChildren = function(path,url,options){
 								knot : knot,
 								fn : $.proxy(function(){
 									//console.log('change:',this.input.val());
-									if(this.knot.get() != this.input.val()){
-										//console.log('changed:',this.input.val());
-										this.knot.set(this.input.val());
-									}
+									this.knot.set(this.input.val());
 								},{ input : $input, knot : knot })
 							}
 							
@@ -183,6 +177,7 @@ var getChildren = function(path,url,options){
 								function () { 
 									this.input.off('change',this.fn);
 									//console.log('start',this.input.val());
+									//TODO: start update timer
 								}, o
 							));
 
@@ -191,6 +186,7 @@ var getChildren = function(path,url,options){
 									//var value = event.target.value
 									//console.log('stop',this.input.val());
 									this.input.on('change',this.fn);
+									//TODO: stop update timer
 									this.fn();
 								}, o
 							));
@@ -206,13 +202,6 @@ var getChildren = function(path,url,options){
 								)
 							);
 							
-							/*
-							
-							
-							
-							
-							$li.on('change',o.fn);
-							*/
 							break;
 						case 'boolean':
 							$li = $('<li data-role="fieldcontain"></li>').appendTo($list);
@@ -252,9 +241,56 @@ var getChildren = function(path,url,options){
 							
 							// if select changes update knot							
 							$select.on('change',$.proxy(function(){
-								if(this.select.val() != this.knot.get()){
 									this.knot.set(this.select.val());
-								}
+								},
+								{ select: $select, knot: knot }
+							));
+							
+							break;
+						case 'list':
+							$li = $('<li data-role="fieldcontain"></li>').appendTo($list);
+							$li.append('<label for="'+n+'">'+n+'</label>');
+							var $select = $('<select name="'+n+'" id="'+n+'"></select>');
+							$select.appendTo($li);
+							
+							var defaultVal = _.has(childDef,'default') ? childDef.default : 0;
+							var list = _.has(childDef,'list') ? childDef.list : [];
+							
+							for(var i=0; i<list.length; i++){
+								$select.append('<option value="'+i+'">'+list[i]+'</option>');
+							}
+							// get and link to knot
+							var knot = getKnot(childPath);
+							
+							// get initial value
+							if(knot.isReady){
+								$select.val(knot.get());
+							} else {
+								knot.on('ready',$.proxy(
+										function(){
+											if(this.select.val() != this.knot.get()){
+												this.select.val(this.knot.get()).selectmenu('refresh');
+											}
+										},
+										{ select : $select, knot : knot }
+									)
+								);
+							}
+							
+							// if knot changes update select
+							knot.on('change',$.proxy(
+									function(data){
+										if(this.val() != data){
+											this.val(data).selectmenu('refresh');
+										}
+									},
+									$select
+								)
+							);
+							
+							// if select changes update knot							
+							$select.on('change',$.proxy(function(){
+									this.knot.set(this.select.val());
 								},
 								{ select: $select, knot: knot }
 							));
@@ -301,9 +337,7 @@ var getChildren = function(path,url,options){
 							
 							// if select changes update knot							
 							$input.change($.proxy(function(){
-								if(this.input.val() != this.knot.get()){
 									this.knot.set(this.input.val());
-								}
 							},
 							{ input: $input, knot: knot }
 							));
