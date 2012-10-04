@@ -2,6 +2,52 @@ var _ = require('underscore');
 var util = require("util");
 var events = require("events");
 
+// SINGLETON ///////////////////////////////////////////////////////////////
+
+exports.singleton = singleton;
+function singleton(){
+    if(typeof _knots === 'undefined'){
+        _knots = new Knots();
+    }
+    return _knots;
+}
+
+// KNOTS ///////////////////////////////////////////////////////////////////
+
+function Knots(){
+    console.log('initialize Knots')
+    events.EventEmitter.call(this);
+    this.initialize();
+}
+
+util.inherits(Knots,events.EventEmitter);
+
+Knots.prototype.initialize = function(){
+    //TODO: load redis settings from configuration file
+    var redisIP = '173.246.41.66'; // webbynode
+    //var redisIP= '5.157.248.122'; // hamachi mac pro
+    var redisPort = 6379;
+    var RedisBase = require('./RedisBase.js').RedisBase;
+    this.redisBase = new RedisBase(redisIP,redisPort);
+    this.redisBase.on('ready', _.bind(
+        function(){
+            this.emit('ready');
+        },
+        this
+    ));
+}
+
+Knots.prototype.ready = function(callback){
+    this.on('ready',callback);
+    return this;
+}
+
+Knots.prototype.get = function(path,options){
+    return new Knot(path,this.redisBase,options);
+}
+
+// KNOT ///////////////////////////////////////////////////////////////////
+
 exports.Knot = Knot;
 
 function Knot(path,redis,params){
@@ -12,10 +58,12 @@ function Knot(path,redis,params){
 util.inherits(Knot, events.EventEmitter);
 
 Knot.prototype.initialize = function(path,redis,params){
-	
+
+    this.isReady = false;
+
 	var triggerReady = _.after(2,_.bind(function(){
-		console.log('knot ready');
-		this.emit('ready');
+		this.isReady = true;
+        this.emit('ready');
 	},this));
 	
 	this.path = path;
@@ -94,4 +142,19 @@ Knot.prototype.set = function(value){
 
 Knot.prototype.get = function(){
 	return this.value;
+}
+
+Knot.prototype.ready = function(callback){
+    this.on('ready',callback);
+    if(this.isReady){
+        callback();
+    }
+    //TODO: remove from event
+    return this;
+}
+
+Knot.prototype.change = function(callback){
+    this.on('change',callback);
+    //TODO: remove from event
+    return this;
 }

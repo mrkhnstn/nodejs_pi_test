@@ -43,46 +43,45 @@ app.get('/', function(req, res){
 // start server
 ////////////////////////////////////////////////////////////////////////////
 
+function initializeKnotsModules(){
+    //console.log('create redisSocketServer');
+    //redisSocketServer = new RedisSocketServer(redisBase);
+    //setupSocket();
+
+    var MAC = require('./MAC');
+    MAC.get(function(mac){
+
+        var deviceId = mac;
+        // set the device id of this  pi to its mac address
+
+        // setup continuous pinging of server
+        pingKnot = new Knot(deviceId+'/ping',knots.redisBase,{type:'string'});
+        pingServer();
+        setInterval(pingServer,10000);
+
+        var isPi = require('os').platform() == "linux";
+        // if running on linux then consider this to be a pi
+
+        var portName = isPi ? '/dev/ttyACM0' : '/dev/tty.usbmodemfa131'
+        //serial portname for arduino differs on pi and mac
+
+        //arduinoTest = require('./ArduinoKnotTest.js');
+        //arduinoTest.setup(deviceId+'/arduino_test',portName);
+
+        arduinoTestBencode = require('./ArduinoKnotTestBencode.js');
+        arduinoTestBencode.setup(deviceId+'/arduino_test_bencode',portName);
+
+        //arduinoBencodeDictTest = require('./ArduinoBencodeDictTest.js');
+        //arduinoBencodeDictTest.setup(deviceId+'/arduino_bencode_test','/dev/tty.usbmodemfd1241',redisBase);
+    });
+}
+
+knots = require('./Knot').singleton();
+knots.ready(initializeKnotsModules);
+
 var server = http.createServer(app);
 server.listen(app.get('port'), function(){
   	console.log("Express server listening on port " + app.get('port'));
-  	
-  	//TODO:  the express server is actually not required for knots
-  	var webbynodeIP = '173.246.41.66';
-  	var hamachiMacProIP = '5.157.248.122';
-	redisBase = new RedisBase(webbynodeIP,6379);
-	
-	redisBase.on('ready',function(){
-		//console.log('create redisSocketServer');
-		//redisSocketServer = new RedisSocketServer(redisBase);
-		//setupSocket();
-
-
-
-		var MAC = require('./MAC');
-  		MAC.get(function(mac){
-  	
-			var deviceId = mac;
-			// set the device id of this  pi to its mac address
-
-            // setup continuous pinging of server
-            pingKnot = new Knot(deviceId+'/ping',redisBase,{type:'string'});
-            pingServer();
-            setInterval(pingServer,10000);
-			
-			var isPi = require('os').platform() == "linux"; 
-			// if running on linux then consider this to be a pi
-			
-			var portName = isPi ? '/dev/ttyACM0' : '/dev/tty.usbmodemfa131'
-			//serial portname for arduino differs on pi and mac
-			 
-			arduinoTest = require('./ArduinoKnotTest.js');
-			arduinoTest.setup(deviceId+'/arduino_test',portName,redisBase);
-		});
-	});
-
- 	
-	
 });
 
 function pingServer(){

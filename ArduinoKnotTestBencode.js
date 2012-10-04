@@ -7,8 +7,11 @@ var portName = '/dev/tty.usbmodemfa131'
 var devicePath;
 var inKnots = {};
 var outKnots = {};
+var lastUpdateKnot;
 
 var knots = require('./Knot.js').singleton();
+var Bencode = require('./Bencode.js');
+var _ = require('underscore');
 
 exports.setup = setup;
 function setup(_devicePath, _serialPort) {
@@ -18,7 +21,8 @@ function setup(_devicePath, _serialPort) {
 
     // setup serial port
     sp = new SerialPort(portName, {
-        parser:serialport.parsers.readline("\r\n")
+        parser:serialport.parsers.readline("\r\n"),
+        baudrate: 57600
     });
 
     sp.on('open', function () {
@@ -34,46 +38,42 @@ function setup(_devicePath, _serialPort) {
     });
 
     sp.on("data", function (data) {
-        //console.log('serial',data);
         try {
-            var a = data.split(':');
-            if (a.length == 2) {
-                //console.log(a);
-                var key = a[0];
-                var val = a[1];
-                if (key in outKnots) {
-                    outKnots[key].set(val);
+            var o = Bencode.decode(data);
+            for(var n in o){
+                if(n in outKnots){
+                    outKnots[n].set(o[n]);
                 }
             }
+            lastUpdateKnot.set((new Date()).toISOString());
         } catch (e) {
+            console.log('error parsing bencode data');
         }
     });
 
     function setupKnots() {
 
+        var intToArduino = function(){
+            var o = {};
+            o[this.name] = parseInt(this.knot.get());
+            sp.write(Bencode.encode(o));
+        }
+
         // setup knots for actuators
         inKnots.led = knots.get(devicePath + '/led', {type:'boolean', default:1});
-        var ledKnotChanged = function () {
-            console.log('ledKnotChanged',inKnots.led.get());
-            sp.write('led:' + inKnots.led.get() + '\r');
-        }
+        var ledKnotChanged = _.bind(intToArduino,{name:'led',knot:inKnots.led});
         inKnots.led
             .ready(ledKnotChanged)
             .change(ledKnotChanged);
 
         inKnots.pwm = knots.get(devicePath + '/pwm', {type:'int', default:0, min:0, max:255});
-        var pwmKnotChanged = function () {
-            console.log('pwmKnotChanged');
-            sp.write('pwm:' + inKnots.pwm.get() + '\r');
-        };
+        var pwmKnotChanged = _.bind(intToArduino,{name:'pwm',knot:inKnots.pwm});
         inKnots.pwm
             .ready(pwmKnotChanged)
             .change(pwmKnotChanged);
 
         inKnots.servo = knots.get(devicePath + '/servo', {type:'int', default:0, min:0, max:180});
-        var servoKnotChanged = function () {
-            sp.write('servo:' + inKnots.servo.get() + '\r');
-        };
+        var servoKnotChanged = _.bind(intToArduino,{name:'servo',knot:inKnots.servo});
         inKnots.servo
             .ready(servoKnotChanged)
             .change(servoKnotChanged);
@@ -82,5 +82,6 @@ function setup(_devicePath, _serialPort) {
         outKnots.analog = knots.get(devicePath + '/analog', {type:'int', default:0, min:0, max:1024});
         outKnots.button = knots.get(devicePath + '/button', {type:'boolean', default:0});
 
+        lastUpdateKnot = knots.get(devicePath + '/last_update', {type:'string'});
     }
 }

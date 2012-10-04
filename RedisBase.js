@@ -47,11 +47,12 @@ RedisBase.prototype.connect = function(host,port,pw){
 	
 	this.pubClient.on("error", function (err) {
 		console.log("pubClient error",err);
+        process.exit(1); // currently exits on error
+        //TODO: improve error handling
 	});
 	
 	this.pubClient.on("ready", function () {
 		console.log("pubClient ready");
-		
 		triggerReady();
 	});
 	
@@ -71,6 +72,8 @@ RedisBase.prototype.connect = function(host,port,pw){
 	
 	this.subClient.on("error", function (err) {
 		console.log("subClient error",err);
+        process.exit(1); // currently exits on error
+        //TODO: improve error handling
 	});
 	
 	var self = this;
