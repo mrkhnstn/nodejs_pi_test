@@ -57,9 +57,19 @@ function initializeKnotsModules(){
         // set the device id of this  pi to its mac address
 
         // setup continuous pinging of server
-        pingKnot = new Knot(deviceId+'/ping',knots.redisBase,{type:'string'});
+        pingKnot = knots.get(deviceId+'/ping',{type:'string'});
         pingServer();
         setInterval(pingServer,10000);
+
+        startNumKnot = knots.get(deviceId+'/start_num',{type:'number',default:0});
+        startNumKnot.ready(function(){
+            startNumKnot.set(parseInt(startNumKnot.get())+1);
+        });
+
+        startKnot = knots.get(deviceId+'/started',{type:'string'});
+        startKnot.ready(function(){
+           startKnot.set((new Date()).toISOString());
+        });
 
         var isPi = require('os').platform() == "linux";
         // if running on linux then consider this to be a pi

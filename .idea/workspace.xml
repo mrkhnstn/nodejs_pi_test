@@ -2,12 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="44432ed8-c899-4492-8772-76af2e4a0b7c" name="Default" comment="added basic pinging of server">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Log.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ArduinoKnotTestBencode.js" afterPath="$PROJECT_DIR$/ArduinoKnotTestBencode.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Knot.js" afterPath="$PROJECT_DIR$/Knot.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAC.js" afterPath="$PROJECT_DIR$/MAC.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/RedisBase.js" afterPath="$PROJECT_DIR$/RedisBase.js" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/pi_knots.js" afterPath="$PROJECT_DIR$/pi_knots.js" />
     </list>
     <ignored path="nodejs_pi.iws" />
@@ -27,7 +21,7 @@
   </component>
   <component name="ExecutionTargetManager" SELECTED_TARGET="default_target" />
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.43489254">
+    <splitter split-orientation="horizontal" split-proportion="0.33565107">
       <split-first>
         <leaf>
           <file leaf-file-name="RedisBase.js" pinned="false" current="false" current-in-tab="false">
@@ -42,7 +36,7 @@
           <file leaf-file-name="ArduinoKnotTest.js" pinned="false" current="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/ArduinoKnotTest.js">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="10" column="45" selection-start="268" selection-end="268" vertical-scroll-proportion="0.16797313">
+                <state line="16" column="27" selection-start="393" selection-end="393" vertical-scroll-proportion="0.268757">
                   <folding />
                 </state>
               </provider>
@@ -73,16 +67,16 @@
           <file leaf-file-name="ArduinoKnotTestBencode.js" pinned="false" current="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/ArduinoKnotTestBencode.js">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="17" column="22" selection-start="418" selection-end="418" vertical-scroll-proportion="-3.6363637">
+                <state line="17" column="22" selection-start="418" selection-end="418" vertical-scroll-proportion="0.0">
                   <folding />
                 </state>
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="MAC.js" pinned="false" current="true" current-in-tab="true">
+          <file leaf-file-name="MAC.js" pinned="false" current="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/MAC.js">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="38" column="2" selection-start="679" selection-end="679" vertical-scroll-proportion="0.62913907">
+                <state line="5" column="0" selection-start="81" selection-end="81" vertical-scroll-proportion="0.0">
                   <folding />
                 </state>
               </provider>
@@ -97,10 +91,10 @@
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="pi_knots.js" pinned="false" current="false" current-in-tab="false">
+          <file leaf-file-name="pi_knots.js" pinned="false" current="true" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/pi_knots.js">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="6" column="0" selection-start="153" selection-end="187" vertical-scroll-proportion="0.0">
+                <state line="65" column="38" selection-start="1974" selection-end="1974" vertical-scroll-proportion="0.30684328">
                   <folding />
                 </state>
               </provider>
@@ -127,13 +121,13 @@
       <command text="node pi_knots.js" />
       <command text="node pi_knots.js" />
       <command text="node pi_knots.js" />
-      <command text="node pi_knots.js" />
-      <command text="node pi_knots.js" />
-      <command text="node pi_knots.js" />
-      <command text="node pi_knots.js" />
-      <command text="node pi_knots.js" />
-      <command text="node pi_knots.js" />
       <command text="sudo npm install log" />
+      <command text="node pi_knots.js" />
+      <command text="node pi_knots.js" />
+      <command text="node pi_knots.js" />
+      <command text="node pi_knots.js" />
+      <command text="node pi_knots.js" />
+      <command text="node pi_knots.js" />
       <command text="node pi_knots.js" />
       <command text="node pi_knots.js" />
       <command text="node pi_knots.js" />
@@ -159,16 +153,17 @@
         <option value="$PROJECT_DIR$/BencodeTest.js" />
         <option value="$PROJECT_DIR$/ArduinoBencodeDictTest.js" />
         <option value="$PROJECT_DIR$/ArduinoKnotTest.js" />
-        <option value="$PROJECT_DIR$/pi_knots.js" />
         <option value="$PROJECT_DIR$/RedisBase.js" />
         <option value="$PROJECT_DIR$/Knot.js" />
         <option value="$PROJECT_DIR$/Log.js" />
         <option value="$PROJECT_DIR$/ArduinoKnotTestBencode.js" />
         <option value="$PROJECT_DIR$/MAC.js" />
+        <option value="$PROJECT_DIR$/pi_knots.js" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
+    <option name="x" value="-1" />
     <option name="y" value="22" />
     <option name="width" value="1920" />
     <option name="height" value="1054" />
@@ -296,7 +291,7 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="22" width="1920" height="1054" extended-state="0" />
+    <frame x="-1" y="22" width="1920" height="1054" extended-state="0" />
     <editor active="false" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -445,20 +440,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ArduinoKnotTest.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="10" column="45" selection-start="268" selection-end="268" vertical-scroll-proportion="0.16797313">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/pi_knots.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="6" column="0" selection-start="153" selection-end="187" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/Log.js">
       <provider selected="true" editor-type-id="text-editor">
         <state line="7" column="37" selection-start="218" selection-end="252" vertical-scroll-proportion="0.0">
@@ -466,16 +447,30 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ArduinoKnotTestBencode.js">
+    <entry file="file://$PROJECT_DIR$/ArduinoKnotTest.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="17" column="22" selection-start="418" selection-end="418" vertical-scroll-proportion="-3.6363637">
+        <state line="16" column="27" selection-start="393" selection-end="393" vertical-scroll-proportion="0.268757">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/MAC.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="38" column="2" selection-start="679" selection-end="679" vertical-scroll-proportion="0.62913907">
+        <state line="5" column="0" selection-start="81" selection-end="81" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ArduinoKnotTestBencode.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="17" column="22" selection-start="418" selection-end="418" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pi_knots.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="65" column="38" selection-start="1974" selection-end="1974" vertical-scroll-proportion="0.30684328">
           <folding />
         </state>
       </provider>
