@@ -1,6 +1,7 @@
 var _ = require('underscore');
 var util = require("util");
 var events = require("events");
+var log = require('./Log.js').log;
 
 // SINGLETON ///////////////////////////////////////////////////////////////
 
@@ -15,7 +16,7 @@ function singleton(){
 // KNOTS ///////////////////////////////////////////////////////////////////
 
 function Knots(){
-    console.log('initialize Knots')
+    log.debug('initialize Knots')
     events.EventEmitter.call(this);
     this.initialize();
 }
@@ -111,7 +112,7 @@ Knot.prototype.deinitialize = function(){
 }
 
 Knot.prototype.message = function(path,value){
-	console.log('message',value);
+	//log.debug('message',value);
 	if(!(_.isNull(value))){ // value is null if not set yet
 		if(value != this.value){
 			this.value = value;
@@ -135,7 +136,7 @@ Knot.prototype.set = function(value){
 	if(value != this.value){
 		this.value = value;
 		this.emit("change", this.value);
-		console.log('knot set',this.path,this.value);
+		//log.debug('knot set',this.path,this.value);
 		this.redis.set(this.path,this.value);
 	}
 },

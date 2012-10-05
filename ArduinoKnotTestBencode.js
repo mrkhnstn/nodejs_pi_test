@@ -1,3 +1,5 @@
+var log = require('./Log.js').log;
+
 var serialport = require("serialport");
 var SerialPort = serialport.SerialPort;
 var sp = null;
@@ -30,11 +32,11 @@ function setup(_devicePath, _serialPort) {
     });
 
     sp.on('error', function () {
-        console.log('serial error', arguments);
+        log.error('serial error', arguments);
     });
 
     sp.on('close', function () {
-        console.log('serial close', arguments);
+        log.error('serial close', arguments);
     });
 
     sp.on("data", function (data) {
@@ -47,7 +49,7 @@ function setup(_devicePath, _serialPort) {
             }
             lastUpdateKnot.set((new Date()).toISOString());
         } catch (e) {
-            console.log('error parsing bencode data');
+            log.error('error parsing bencode data');
         }
     });
 

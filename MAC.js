@@ -31,7 +31,9 @@ function get(fn){
 }
 
 
+/*
 //example
 get(function(mac){
 	console.log('MAC: ',mac);
 });
+*/

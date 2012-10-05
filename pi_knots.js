@@ -4,6 +4,8 @@ var express = require('express')
   , path = require('path')
   , _ = require('underscore');
 
+var log = require('./Log.js').log;
+
 var Knot = require('./Knot.js').Knot;
 var RedisBase = require('./RedisBase.js').RedisBase;
 var RedisSocketServer = require('./RedisSocketServer.js').RedisSocketServer;
@@ -44,7 +46,7 @@ app.get('/', function(req, res){
 ////////////////////////////////////////////////////////////////////////////
 
 function initializeKnotsModules(){
-    //console.log('create redisSocketServer');
+    //log.debug('create redisSocketServer');
     //redisSocketServer = new RedisSocketServer(redisBase);
     //setupSocket();
 
@@ -81,7 +83,7 @@ knots.ready(initializeKnotsModules);
 
 var server = http.createServer(app);
 server.listen(app.get('port'), function(){
-  	console.log("Express server listening on port " + app.get('port'));
+  	log.debug("Express server listening on port " + app.get('port'));
 });
 
 function pingServer(){
@@ -97,7 +99,7 @@ var sockets;
 
 function setupSocket(){
 
-  	console.log("setting up socket.io");
+  	log.debug("setting up socket.io");
   	io = require('socket.io').listen(server);
 
 	io.configure(function () {
@@ -118,7 +120,7 @@ function setupSocket(){
 /*
 var f2 = new Knot('test/f2',redisBase);
 f2.on('change',function(data){
-	console.log('f2',data);
+	log.debug('f2',data);
 });
 f2.on('ready',function(){
 	f2.set(77);
@@ -130,14 +132,14 @@ var l1 = new Knot('test/b1/l1',redisBase);
 	
 var f1 = new Knot('a/b/f1',redis,{default:1,type:'int',min:1,max:10});
 f1.on("change",function(f){
-	console.log('f1,changed',f);
+	log.debug('f1,changed',f);
 });
 
 var log = _.bind(f1.set, f1);
 _.delay(log, 1000, 6);
 _.delay(log, 3000, 7);
 
-console.log('f1====',f1);
+log.debug('f1====',f1);
 var f2 = new Knot('a/b/f2',{default:2,min:1,max:10});
 var f3 = new Knot('f3',{min:1,max:5});
 var f4 = new Knot('a/b/c/f4',{min:1,max:5});
@@ -161,30 +163,30 @@ redis.createField('a/b/f1',JSON.stringify({type:'float', min:0, max:1}));
 redis.createField('a/b/b1',JSON.stringify({type:'boolean'}));
 redis.createField('a/b/c/b2',JSON.stringify({type:'boolean'}));
 redis.getFields('a/b',function(res){
-	console.log(res);
+	log.debug(res);
 });
 */
 
 /*
 redis.getChildren('',function(res,err){
-	console.log('getChildren *:',res);
+	log.debug('getChildren *:',res);
 });
 
 redis.getChildren('a',function(res,err){
-	console.log('getChildren a:',res);
+	log.debug('getChildren a:',res);
 });
 
 redis.getChildren('a/b',function(res,err){
-	console.log('getChildren a/b:',res);
+	log.debug('getChildren a/b:',res);
 });
 */
 
 /*
 redis.getMeta('a/b/f1',function(res,err){
-	console.log(res);
+	log.debug(res);
 });
 
 redis.getMeta('a/b/f3',function(res,err){
-	console.log(res);
+	log.debug(res);
 });
 */

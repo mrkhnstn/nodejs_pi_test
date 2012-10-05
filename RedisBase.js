@@ -2,6 +2,8 @@ var _ = require('underscore');
 var util = require("util");
 var events = require("events");
 
+var log = require('./Log.js').log;
+
 exports.RedisBase = RedisBase;
 
 function RedisBase(host,port,pw){
@@ -14,7 +16,7 @@ util.inherits(RedisBase, events.EventEmitter);
 RedisBase.prototype.connect = function(host,port,pw){
 
 	var triggerReady = _.after(2,_.bind(function(){
-		console.log('RedisBase ready');
+		log.debug('RedisBase ready');
 		this.emit('ready');
 	},this));
 	
@@ -26,52 +28,52 @@ RedisBase.prototype.connect = function(host,port,pw){
 	this.host = host || '127.0.0.1' ;
 	this.port = port || 6379;
 	this.pw = pw || null;
-	console.log('redis host:',this.host);
+	log.debug('redis host:',this.host);
 	this.subObjects = {};
 	
 	var redis = require("redis");
 	
-	console.log("creating pubClient"); 
+	log.debug("creating pubClient"); 
 	this.pubClient = redis.createClient(this.port,this.host);
 	
 	if(this.pw !== null){
-		console.log("authenticating pubClient"); 
+		log.debug("authenticating pubClient"); 
 		this.pubClient.auth(this.pw, function (err) {
 			if (err) { 
-				console.log("pubClient authentication error",err); 
+				log.error("pubClient authentication error",err);
 			} else {
-				console.log("pubClient authenticated"); 
+				log.debug("pubClient authenticated"); 
 			}
 		});
 	}
 	
 	this.pubClient.on("error", function (err) {
-		console.log("pubClient error",err);
+		log.error("pubClient error",err);
         process.exit(1); // currently exits on error
         //TODO: improve error handling
 	});
 	
 	this.pubClient.on("ready", function () {
-		console.log("pubClient ready");
+		log.debug("pubClient ready");
 		triggerReady();
 	});
 	
-	console.log("creating subClient"); 
+	log.debug("creating subClient"); 
 	this.subClient = redis.createClient(this.port,this.host);
 	
 	if(this.pw != null){
-		console.log("authenticating subClient"); 
+		log.debug("authenticating subClient"); 
 		this.subClient.auth(this.pw, function (err) {
 			if (err) { 
-				console.log("subClient authentication error",err); 
+				log.error("subClient authentication error",err);
 			} else {
-				console.log("subClient authenticated"); 
+				log.debug("subClient authenticated"); 
 			}
 		});
 	}
 	
 	this.subClient.on("error", function (err) {
-		console.log("subClient error",err);
+		log.error("subClient error",err);
         process.exit(1); // currently exits on error
         //TODO: improve error handling
 	});
@@ -79,7 +81,7 @@ RedisBase.prototype.connect = function(host,port,pw){
 	var self = this;
 	
 	this.subClient.on("ready", function(){
-		console.log("subClient ready");
+		log.debug("subClient ready");
 		self.subClient.on("message", function(path, message){
 			
 			if(_.has(self.subObjects,path)){
@@ -170,7 +172,7 @@ RedisBase.prototype.setMeta = function(path,meta){
 RedisBase.prototype.addChildren = function(path,name){
 	var self = this;
 	this.pubClient.hget(path,name,function(err,res){
-		console.log('addChildren:',path,name,err,res);
+		log.debug('addChildren:',path,name,err,res);
 		if(_.isNull(res) || _.isUndefined(res)){
 			// meta data does not exist
 			self.pubClient.hset(path,name,JSON.stringify({children:true}));
@@ -227,7 +229,7 @@ RedisBase.prototype.getChildren = function(path,fn,scope){
 	//var self = this;
 	//this.pubClient.smembers('*/'+path,function(err,res){
 	
-	/*	console.log(res);
+	/*	log.debug(res);
 		var fieldMembers = res;
 		self.pubClient.hgetall('?/'+path,function(err,res){
 			// convert object values from strings to objects
