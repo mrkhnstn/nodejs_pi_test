@@ -3,7 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="44432ed8-c899-4492-8772-76af2e4a0b7c" name="Default" comment="added basic pinging of server">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/JeenodeTest2.js" afterPath="$PROJECT_DIR$/JeenodeTest2.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/pi_knots.js" afterPath="$PROJECT_DIR$/pi_knots.js" />
     </list>
     <ignored path="nodejs_pi.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -28,7 +27,7 @@
           <file leaf-file-name="JeenodeTest2.js" pinned="false" current="true" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/JeenodeTest2.js">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="62" column="22" selection-start="1786" selection-end="1786" vertical-scroll-proportion="0.66225165">
+                <state line="37" column="35" selection-start="1207" selection-end="1207" vertical-scroll-proportion="0.48013246">
                   <folding>
                     <element signature="n#!!doc" expanded="true" />
                   </folding>
@@ -263,7 +262,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="22" width="1920" height="1054" extended-state="0" />
-    <editor active="false" />
+    <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3290461" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
@@ -273,7 +272,7 @@
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="8" side_tool="true" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Command Line Tools Console" active="true" anchor="bottom" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="true" weight="0.29689175" sideWeight="0.99947286" order="11" side_tool="false" content_ui="tabs" x="-21" y="677" width="1657" height="249" />
+      <window_info id="Command Line Tools Console" active="false" anchor="bottom" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.29689175" sideWeight="0.99947286" order="11" side_tool="false" content_ui="tabs" x="-21" y="677" width="1657" height="249" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3290461" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -447,7 +446,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/JeenodeTest2.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="62" column="22" selection-start="1786" selection-end="1786" vertical-scroll-proportion="0.66225165">
+        <state line="37" column="35" selection-start="1207" selection-end="1207" vertical-scroll-proportion="0.48013246">
           <folding>
             <element signature="n#!!doc" expanded="true" />
           </folding>

@@ -26,6 +26,7 @@ function setup(_devicePath,_port) {
 
     devicePath = _devicePath;
     portName = _port;
+    log.debug("Serialport: "+portName)
 
     // setup serial port
     sp = new SerialPort(portName, {
@@ -34,15 +35,16 @@ function setup(_devicePath,_port) {
     });
 
     sp.on('open', function () {
+        log.debug("Serialport open")
         setTimeout(postSerialSetup,3000); // required after establishing connection with the Arduino
     });
 
     sp.on('error', function () {
-        log.error('serial error: '+ arguments);
+        log.error('serial error: '+ JSON.stringify(arguments));
     });
 
     sp.on('close', function () {
-        log.error('serial close: '+ arguments);
+        log.error('serial close: '+ JSON.stringify(arguments));
     });
 
     sp.on("data", function (data) {
