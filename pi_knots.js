@@ -80,8 +80,14 @@ function initializeKnotsModules(){
         //arduinoTest = require('./ArduinoKnotTest.js');
         //arduinoTest.setup(deviceId+'/arduino_test',portName);
 
-        arduinoTestBencode = require('./ArduinoKnotTestBencode.js');
-        arduinoTestBencode.setup(deviceId+'/arduino_test_bencode',portName);
+//        arduinoTestBencode = require('./ArduinoKnotTestBencode.js');
+//        arduinoTestBencode.setup(deviceId+'/arduino_test_bencode',portName);
+//
+//        jeenodeTest1 = require('./JeenodeTest1.js');
+//        jeenodeTest1.setup(deviceId+'/jeenode_test_1');
+
+        jeenodeTest2 = require('./JeenodeTest2.js');
+        jeenodeTest2.setup(deviceId+'/jeenode_test_2');
 
         //arduinoBencodeDictTest = require('./ArduinoBencodeDictTest.js');
         //arduinoBencodeDictTest.setup(deviceId+'/arduino_bencode_test','/dev/tty.usbmodemfd1241',redisBase);
