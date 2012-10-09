@@ -87,7 +87,7 @@ function initializeKnotsModules(){
 //        jeenodeTest1.setup(deviceId+'/jeenode_test_1');
 
         jeenodeTest2 = require('./JeenodeTest2.js');
-        jeenodeTest2.setup(deviceId+'/jeenode_test_2');
+        jeenodeTest2.setup(deviceId+'/jeenode_test_2',isPi ? '/dev/ttyUSB0' : '/dev/tty.usbserial-AE01BQR1');
 
         //arduinoBencodeDictTest = require('./ArduinoBencodeDictTest.js');
         //arduinoBencodeDictTest.setup(deviceId+'/arduino_bencode_test','/dev/tty.usbmodemfd1241',redisBase);

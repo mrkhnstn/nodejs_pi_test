@@ -12,7 +12,7 @@ var serialport = require("serialport");
 var SerialPort = serialport.SerialPort;
 var sp = null;
 //var portName = '/dev/ttyACM0';
-var portName = '/dev/tty.usbserial-AE01BQR1' //< Jeelink
+var portName = '/dev/tty.usbserial-AE01BQR1' //< Jeelink on OSX
 
 var knots = require('./Knot.js').singleton();
 var Bencode = require('./Bencode.js');
@@ -22,9 +22,10 @@ var jeenodes = [];
 
 
 exports.setup = setup;
-function setup(_devicePath) {
+function setup(_devicePath,_port) {
 
-    devicePath = _devicePath
+    devicePath = _devicePath;
+    portName = _port;
 
     // setup serial port
     sp = new SerialPort(portName, {
@@ -59,7 +60,7 @@ function setup(_devicePath) {
 
 function postSerialSetup(){
 
-    var nodeIds = [2,3,4,5,6];
+    var nodeIds = [2,3];
     for(var i=0; i<nodeIds.length; i++)
         jeenodes.push(new Jeenode(nodeIds[i]));
     currentJeenodeId = jeenodes.length - 1;
@@ -88,6 +89,7 @@ function Jeenode(id){
     this.update = function(){
         var i = parseInt(this.ledKnot.get());
         var bc = Bencode.encode({_D:this.id,led:i});
+        log.debug(this.id + " : update " + i);
         sp.write(bc);
         ackTimeout = setTimeout(ackFail,500)
     }
@@ -98,7 +100,8 @@ function Jeenode(id){
 
     this.receiveData = function(o){
         if('counter' in o){
-            this.counterKnot.set(parseInt(o['counter']));
+            this.counterKnot.set(parseInt(o.counter));
+            log.debug(this.id + " : " + o.counter);
         } else {
             log.error(this.id + 'did not receive counter')
         }
