@@ -172,7 +172,7 @@ RedisBase.prototype.setMeta = function(path,meta){
 RedisBase.prototype.addChildren = function(path,name){
 	var self = this;
 	this.pubClient.hget(path,name,function(err,res){
-		log.debug('addChildren:',path,name,err,res);
+		//log.debug('addChildren:',path,name,err,res);
 		if(_.isNull(res) || _.isUndefined(res)){
 			// meta data does not exist
 			self.pubClient.hset(path,name,JSON.stringify({children:true}));
@@ -210,49 +210,84 @@ RedisBase.prototype.getMeta = function(path,fn,scope){
 
 RedisBase.prototype.getChildren = function(path,fn,scope){
 
+    var self = this;
+    var fn = fn;
+    var scope = scope;
+
 	this.pubClient.hgetall(path === '' ? '?' : '?/'+path,function(err,res){
 		if(_.isObject(res)){
 			// convert object values from strings to objects
 			for(var n in res){
 				res[n] = JSON.parse(res[n]);
 			}
-		}
-		if(_.isFunction(fn)){
-			if(_.isUndefined(scope)){
-				fn(res,err);
-			} else {
-				fn.apply(scope,[res,err]);
-			}
+
+            // get values using multi redis call
+            var multi = self.pubClient.multi();
+            for(var n in res){
+                multi.get(path + '/' + n, _.bind(function(err,data){
+                    //console.log(this.name,data);
+                    if(!_.isNull(data)){
+                        res[this.name].value = data;
+                    }
+                },{name:n}))
+            }
+
+
+            var receivedValuesCallback = function(err,replies){
+                //console.log('multi done',replies);
+                if(_.isFunction(fn)){
+                    if(_.isUndefined(scope)){
+                        fn(res,err);
+                    } else {
+                        fn.apply(scope,[res,err]);
+                    }
+                }
+            }
+            multi.exec(receivedValuesCallback);
 		}
 	});
-	
-	//var self = this;
-	//this.pubClient.smembers('*/'+path,function(err,res){
-	
-	/*	log.debug(res);
-		var fieldMembers = res;
-		self.pubClient.hgetall('?/'+path,function(err,res){
-			// convert object values from strings to objects
-			for(var n in res){
-				res[n] = JSON.parse(res[n]);
-			}
-			// add missing fields as containers
-			for(var i=0; i<fieldMembers.length; i++){
-				var n = fieldMembers[i];
-				if(!(n in res)){
-					res[n] = {type:'container'};
-				}
-			}
-			// trigger callback
-			//if(typeof scope === 'undefined'){
-			if(_.isFunction(fn)){
-				if(_.isUndefined(scope)){
-					fn([res]);
-				} else {
-					fn.apply(scope,[res]);
-				}
-			}
-		});
-	});
-	*/
+}
+
+RedisBase.prototype.delete = function(path,recursive){
+
+    if(_.isUndefined(recursive))
+        recursive = true;
+
+    var self = this;
+    var a = path.split('/');
+    var name = a[a.length-1];
+    a.splice(a.length-1,1);
+    var parentPath = a.join('/');
+    var metaPath = parentPath == '' ? '?' : '?/'+parentPath;
+
+    if(recursive){
+        this.pubClient.hgetall(path === '' ? '?' : '?/'+path,function(err,res){
+            if(_.isObject(res)){
+                for(var n in res){
+                    //res[n] = JSON.parse(res[n]);
+                    var childPath = path+'/'+n;
+                    //console.log('childPath:',childPath);
+                    self.delete(childPath,true);
+                }
+            }
+        });
+    }
+
+    var multi = this.pubClient.multi();
+
+    multi.hdel(metaPath,name,function(err,res){
+        //console.log('hdel',metaPath,name,err,res);
+    });
+
+    // delete path key
+    multi.del(path,function(err,res){
+        //console.log('deleted',path,err,res);
+    });
+
+    multi.exec(function(data){
+        log.debug('deleted '+path);
+    });
+
+    //TODO: handle listeners connected to pathes that get deleted by throwing deleted events to knots and further
+
 }

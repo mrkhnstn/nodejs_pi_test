@@ -1,42 +1,15 @@
-// 
-var knots = {}; // map of all knots
-
-// 
-var getKnot = function(path){
-	if(!(path in knots)){
-		knots[path] = new Knot(path,redis);
-	}
-	return knots[path];
-}
-
-var pages = {}; // map of all pages
-var getPage = function(path){
-	if(!(path in knots)){
-		knots[path] = new Knot(path,redis);
-	}
-	return knots[path];
-}
-
 var inited = false;
-
-// setup socket
-var socket = io.connect('http://'+window.location.host+'/knots');
-var redis = new Redis(socket);
-socket.on('connect',function(){
-	console.log('socket connected');
-	//TODO: reconnection routine
-});
+var knots = Knots.singleton();
+var pages = {}; // map of all pages
 
 // Listen for any attempts to call changePage().
 $(document).bind( "pagebeforechange", function( e, data ) {
-	console.log("pagebeforechange",e,data);
 	// We only want to handle changePage() calls where the caller is
 	// asking us to load a page by URL.
 	
 	if(!inited){
 		inited = true;
 
-		console.log(data.toPage.context.URL);
 		var u = $.mobile.path.parseUrl( data.toPage.context.URL );
 		var a = u.pathname.split('/');
 
@@ -48,7 +21,6 @@ $(document).bind( "pagebeforechange", function( e, data ) {
 						b += '/';
 					b += a[i];
 				}
-				console.log(b);
 				getChildren(b,u.domain+u.pathname,data.options);
 			}
 		}
@@ -58,9 +30,16 @@ $(document).bind( "pagebeforechange", function( e, data ) {
 	if ( typeof data.toPage === "string" ) {
 		
 		var u = $.mobile.path.parseUrl( data.toPage );
-		var a = u.pathname.split('/');
-		console.log('parsed url',u,a);
-		
+
+        console.log(u);
+        if(u.hash == "#edit"){
+            //TODO: toggle edit mode
+            console.log('toggle edit mode');
+            return;
+        }
+
+        // load new knots page
+        var a = u.pathname.split('/');
 		if(a.length >= 2){
 			if(a[1] === 'knots'){
 				var b = "";
@@ -69,13 +48,10 @@ $(document).bind( "pagebeforechange", function( e, data ) {
 						b += '/';
 					b += a[i];
 				}
-				console.log(b);
 				getChildren(b,u.domain+u.pathname,data.options);
 			}
 		}
-		
-		
-		
+
 		e.preventDefault();
 	} else if(typeof data.toPage === 'object'){
 		/*
@@ -85,11 +61,11 @@ $(document).bind( "pagebeforechange", function( e, data ) {
 
 
 $(document).bind( "pageinit", function( e, data ) {
-	console.log('pageinit',e,data);
+	//console.log('pageinit',e,data);
 });
 
 $(document).bind( "pagecreate", function( e, data ) {
-	console.log('pagecreate',e,data);
+	//console.log('pagecreate',e,data);
 });
 
 // add start and stop events to slider
@@ -103,28 +79,29 @@ $(document).on({
 }, ".ui-slider");
 
 var getChildren = function(path,url,options){
-	console.log('getChildren,path,url,options:',url,path,options);
+	//console.log('getChildren,path,url,options:',url,path,options);
 
 	// if page already exists then display cached page
 	if(path in pages){
-		console.log('page already exists:',path);
+		//console.log('page already exists:',path);
 		options.dataUrl = url;
 		$.mobile.changePage( pages[path], options );
 		return;
 	} 
 
-	redis.getChildren(path,function(children){
-		console.log('children',children);
+	knots.redis.getChildren(path,function(children){
+		//console.log('children',children);
 		
 		var $page = $('<div id="list" data-role="page"></div>').appendTo($('body'));
 		pages[path] = $page; // add new page to cached pages
-		var $header = $('<div data-role="header"><h1>'+path+'</h1></div>').appendTo($page);
+		var $header = $('<div data-role="header"><a href="index.html" data-rel="back" data-icon="back">Back</a><h1>'+path+'</h1><a href="#edit" data-icon="edit">Edit</a></div>').appendTo($page);
 		var $content = $('<div data-role="content"></div>').appendTo($page);
 		var $list = $('<ul data-role="listview" data-inset="false"></ul>').appendTo($content);
 
 		for(var n in children){
 			var childDef = children[n];
 			var $li;
+
 			var childPath = path==''?n:path+"/"+n;
 			if(childDef.children){
 				$li = $('<li><a href="#/knots/'+childPath+'">'+n+'</a></li>').appendTo($list);
@@ -134,7 +111,9 @@ var getChildren = function(path,url,options){
 						case 'int':
 						case 'float':
 						case 'number':
+
 							$li = $('<li data-role="fieldcontain"></li>').appendTo($list);
+                            //$li.append('<a href="#delete" data-iconpos="notext" data-role="button" data-icon="delete" data-mini="true" data-inline="true"></a>');
 							$li.append('<label for="'+n+'">'+n+'</label>');
 							var defaultVal = _.has(childDef,'default') ? childDef.default : 0;
 							var min = _.has(childDef,'min') ? childDef.min : 0;
@@ -144,101 +123,72 @@ var getChildren = function(path,url,options){
 							$li.append($input);
 							
 							// get and link to knot
-							var knot = getKnot(childPath);
-							
-							// get initial value
-							if(knot.isReady){
-								$input.val(knot.get()).slider('refresh');
-							} else {
-								knot.on('ready',$.proxy(
-										function(){
-											if(this.input.val() != this.knot.get()){
-												this.input.val(this.knot.get()).slider('refresh');
-											}
-										},
-										{ input : $input, knot : knot }
-									)
-								);
-							}
+							var knot = knots.get(childPath);
 
-							var o = {
+                            var knotChangedCallback = _.bind(
+                                function(){
+                                    if(this.input.val() != this.knot.get()){
+                                        this.input.val(this.knot.get()).slider('refresh');
+                                    }
+                                },
+                                { input : $input, knot : knot }
+                            );
+
+                            knot
+                                .ready(knotChangedCallback)
+                                .change(knotChangedCallback);
+
+							var inputChanged = {
 								li : $li,
 								input : $input,
 								knot : knot,
-								fn : $.proxy(function(){
-									//console.log('change:',this.input.val());
+								callback : _.bind(function(){
 									this.knot.set(this.input.val());
 								},{ input : $input, knot : knot })
 							}
-							
-							$input.on('change',o.fn);
+
+							$input.on('change',inputChanged.callback);
 							
 							$li.on("start", $.proxy(
 								function () { 
-									this.input.off('change',this.fn);
-									//console.log('start',this.input.val());
+									this.input.off('change',this.callback);
 									//TODO: start update timer
-								}, o
+								}, inputChanged
 							));
 
 							$li.on("stop", $.proxy(
-								function (event) {
-									//var value = event.target.value
-									//console.log('stop',this.input.val());
-									this.input.on('change',this.fn);
+								function () {
+									this.input.on('change',this.callback);
 									//TODO: stop update timer
-									this.fn();
-								}, o
+									this.callback();
+								}, inputChanged
 							));
-							
-							// if knot changes update select
-							knot.on('change',$.proxy(
-									function(data){
-										if(this.val() != data){
-											this.val(data).slider('refresh');
-										}
-									},
-									$input
-								)
-							);
-							
+
 							break;
 						case 'boolean':
-							$li = $('<li data-role="fieldcontain"></li>').appendTo($list);
-							$li.append('<label for="'+n+'">'+n+'</label>');
+							$li = $('<li></li>').appendTo($list);
+                            var $div = $('<div data-icon="home" data-role="fieldcontain"></div>').appendTo($li);
+                            $div.append('<label for="'+n+'">'+n+'</label>');
 							var $select = $('<select name="'+n+'" id="'+n+'" data-role="slider" value="1"></select>');
-							$select.appendTo($li);
+							$select.appendTo($div);
 							$select.append('<option value="0">Off</option><option value="1">On</option>');
 
 							// get and link to knot
-							var knot = getKnot(childPath);
-							
-							// get initial value
-							if(knot.isReady){
-								$select.val(knot.get());
-							} else {
-								knot.on('ready',$.proxy(
-										function(){
-											if(this.select.val() != this.knot.get()){
-												this.select.val(this.knot.get()).slider('refresh');
-											}
-										},
-										{ select : $select, knot : knot }
-									)
-								);
-							}
-							
-							// if knot changes update select
-							knot.on('change',$.proxy(
-									function(data){
-										if(this.val() != data){
-											this.val(data).slider('refresh');
-										}
-									},
-									$select
-								)
-							);
-							
+							var knot = knots.get(childPath);
+
+                            var knotChangedCallback = _.bind(
+                                function(){
+                                    if(this.select.val() != this.knot.get()){
+                                        this.select.val(this.knot.get()).slider('refresh');
+                                    }
+                                },
+                                { select : $select, knot : knot }
+                            );
+
+                            knot
+                                .ready(knotChangedCallback)
+                                .change(knotChangedCallback);
+
 							// if select changes update knot							
 							$select.on('change',$.proxy(function(){
 									this.knot.set(this.select.val());
@@ -259,35 +209,22 @@ var getChildren = function(path,url,options){
 							for(var i=0; i<list.length; i++){
 								$select.append('<option value="'+i+'">'+list[i]+'</option>');
 							}
-							// get and link to knot
-							var knot = getKnot(childPath);
-							
-							// get initial value
-							if(knot.isReady){
-								$select.val(knot.get());
-							} else {
-								knot.on('ready',$.proxy(
-										function(){
-											if(this.select.val() != this.knot.get()){
-												this.select.val(this.knot.get()).selectmenu('refresh');
-											}
-										},
-										{ select : $select, knot : knot }
-									)
-								);
-							}
-							
-							// if knot changes update select
-							knot.on('change',$.proxy(
-									function(data){
-										if(this.val() != data){
-											this.val(data).selectmenu('refresh');
-										}
-									},
-									$select
-								)
-							);
-							
+
+							var knot = knots.get(childPath);
+
+                            var knotChangedCallback = _.bind(
+                                function(){
+                                    if(this.select.val() != this.knot.get()){
+                                        this.select.val(this.knot.get()).selectmenu('refresh');
+                                    }
+                                },
+                                { select : $select, knot : knot }
+                            );
+
+                            knot
+                                .ready(knotChangedCallback)
+                                .change(knotChangedCallback);
+
 							// if select changes update knot							
 							$select.on('change',$.proxy(function(){
 									this.knot.set(this.select.val());
@@ -301,40 +238,22 @@ var getChildren = function(path,url,options){
 							$li.append('<label for="'+n+'">'+n+'</label>');
 							var $input = $('<input type="text" name="'+n+'" id="'+n+'" value=""  />');
 							$input.appendTo($li);
-							$input.change(function(){console.log('text!',this.value)});
 							
 							// get and link to knot
-							var knot = getKnot(childPath);
-							
-							// get initial value
-							if(knot.isReady){
-								$input.val(knot.get());
-							} else {
-								knot.on('ready',$.proxy(
-										function(){
-											if(this.input.val() != this.knot.get()){
-												this.input.val(this.knot.get()).text('refresh');
-											}
-										},
-										{
-											input : $input,
-											knot : knot
-										}
-									)
-								);
-							}
-							
-							// if knot changes update select
-							knot.on('change',$.proxy(
-									function(data){
-										if(this.val() != data){
-											this.val(data).text('refresh');
-										}
-									},
-									$input
-								)
-							);
-							
+							var knot = knots.get(childPath);
+
+                            var knotChangedCallback = _.bind(
+                                function(){
+                                    if(this.input.val() != this.knot.get()){
+                                        this.input.val(this.knot.get()).text('refresh');
+                                    }
+                                },{ input : $input, knot : knot }
+                            );
+
+                            knot
+                                .ready(knotChangedCallback)
+                                .change(knotChangedCallback);
+
 							// if select changes update knot							
 							$input.change($.proxy(function(){
 									this.knot.set(this.input.val());

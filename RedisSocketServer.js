@@ -33,11 +33,12 @@ RedisSocketServer.prototype.connect = function(socket){
 		self.redis.subscribe(data.path,listener);
 	});
 	
-	/*
-	socket.on("disconnect"{
+
+	socket.on("disconnect",function(data){
 		//TODO: clean up subscribes
-	}
-	*/
+        console.log("socket disconnected")
+	});
+
 	
 	socket.on("unsubscribe",function(data){
 		self.redis.unsubscribe(data.path,listener);

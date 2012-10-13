@@ -16,7 +16,6 @@ function singleton(){
 // KNOTS ///////////////////////////////////////////////////////////////////
 
 function Knots(){
-    log.debug('initialize Knots')
     events.EventEmitter.call(this);
     this.initialize();
 }
@@ -24,6 +23,10 @@ function Knots(){
 util.inherits(Knots,events.EventEmitter);
 
 Knots.prototype.initialize = function(){
+    log.debug('initialize Knots')
+    this.metaModes = metaModes;
+    this.knots = {}; // map of all knots
+
     //TODO: load redis settings from configuration file
     var redisIP = '173.246.41.66'; // webbynode
     //var redisIP= '5.157.248.122'; // hamachi mac pro
@@ -43,24 +46,48 @@ Knots.prototype.ready = function(callback){
     return this;
 }
 
-Knots.prototype.get = function(path,options){
-    return new Knot(path,this.redisBase,options);
+Knots.prototype.get = function(path,meta,metaMode){
+    if(!(path in knots)){
+        knots[path] = new Knot(path,this.redisBase,meta,metaMode);
+    }
+    return knots[path];
+}
+
+Knots.prototype.delete = function(path,recursive){
+    //TODO: implement
+    this.redisBase.delete(path,recursive);
+}
+
+Knots.prototype.getChildren = function(path,callback){
+    this.redisBase.getChildren(path,callback);
 }
 
 // KNOT ///////////////////////////////////////////////////////////////////
 
 exports.Knot = Knot;
 
-function Knot(path,redis,params){
+function Knot(path,redis,meta,metaMode){
 	events.EventEmitter.call(this);
-	this.initialize(path,redis,params);
+	this.initialize(path,redis,meta,metaMode);
 }
+
+// params_mode:
+// undefined: if params argument exists then use merge mode otherwise use metadata from database
+// merge: database params will take precedence
+// overwrite: given params argument will take precedence
+// replace: database params will be deleted
+
+
+metaModes = {MERGE:0,OVERWRITE:1,REPLACE:2};
+//TODO: implement
 
 util.inherits(Knot, events.EventEmitter);
 
-Knot.prototype.initialize = function(path,redis,params){
+Knot.prototype.initialize = function(path,redis,meta,metaMode){
 
     this.isReady = false;
+    if(_.isUndefined(metaMode))
+        metaMode = metaModes.MERGE;
 
 	var triggerReady = _.after(2,_.bind(function(){
 		this.isReady = true;
@@ -71,14 +98,14 @@ Knot.prototype.initialize = function(path,redis,params){
 	this.redis = redis;
 	
 	this.value = null;
-	if(_.isObject(params))
-		if(_.has(params,'default')){
-			this.value = params.default;
+	if(_.isObject(meta))
+		if(_.has(meta,'default')){
+			this.value = meta.default;
 		}
 	
 	this.meta = {};
-	if(_.isObject(params)){
-		_.extend(this.meta,params);
+	if(_.isObject(meta)){
+		_.extend(this.meta,meta);
 	}
 	
 	// check database for value and if exist 
@@ -93,14 +120,27 @@ Knot.prototype.initialize = function(path,redis,params){
 	
 	// check database for meta data and if found than override default params
 	this.redis.getMeta(this.path,function(res,err){
-		if(_.isNull(res)){
-			this.redis.setMeta(this.path,this.meta);
-		} else {
-			if(_.isString(res)){
+		if(!_.isNull(res)){ // database meta with values available
+			if(_.isString(res)){ //
 				res = JSON.parse(res);
-				_.extend(this.meta,res);
+                switch(metaMode){
+                    case metaModes.MERGE:
+                        _.extend(this.meta,res);
+                        break;
+                    case metaModes.OVERWRITE:
+                        _.extend(res,this.meta);
+                        this.meta= res;
+                        break;
+                    case metaModes.REPLACE:
+                        //console.log('metaModes.REPLACE');
+                        // leave this.meta as is
+                        break;
+                }
+                //console.log(JSON.stringify(this.meta));
+                this.redis.setMeta(this.path,this.meta);
 			}
 		}
+        this.redis.setMeta(this.path,this.meta); // set database meta to this meta
 		triggerReady();
 	},this);
 	

@@ -1,4 +1,5 @@
 var log = require('./Log.js').log;
+var util = require('util');
 
 var serialport = require("serialport");
 var SerialPort = serialport.SerialPort;
@@ -21,6 +22,8 @@ function setup(_devicePath, _serialPort) {
     devicePath = _devicePath
     portName = _serialPort;
 
+    console.log(devicePath,portName);
+
     // setup serial port
     sp = new SerialPort(portName, {
         parser:serialport.parsers.readline("\r\n"),
@@ -28,11 +31,12 @@ function setup(_devicePath, _serialPort) {
     });
 
     sp.on('open', function () {
+        console.log('open');
         setTimeout(setupKnots,1000); // arduino doesn't seem to accept everything
     });
 
     sp.on('error', function () {
-        log.error('serial error', arguments);
+        log.error('serial error'+ util.inspect(arguments));
     });
 
     sp.on('close', function () {

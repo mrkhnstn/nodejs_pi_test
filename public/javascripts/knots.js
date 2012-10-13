@@ -81,8 +81,8 @@ Redis.prototype.getChildren = function(path,fn,scope){
 }
 
 Redis.prototype.subscribe = function(path,listener){
-	this.subscribeListeners[path] = listener;
-	this.socket.emit('subscribe',{path:path});
+    this.subscribeListeners[path] = listener;
+    this.socket.emit('subscribe',{path:path});
 }
 
 Redis.prototype.unsubscribe = function(path,listener){
@@ -94,20 +94,39 @@ Redis.prototype.removeListeners = function(path){
 	//TODO: implement
 }
 
+Redis.prototype.deleteKnot = function(path){
+    //TODO: implement
+}
+
 //////////////////////////////////////////////////////////////////////
 // KNOT
 //////////////////////////////////////////////////////////////////////
 
-function Knot(path,redis,params){
+// path: needs to start with a wrod
+
+// params_mode:
+// undefined: if params argument exists then use merge mode otherwise use metadata from database
+// merge: database params will take precedence
+// overwrite: given params argument will take precedence
+// replace: database params will be deleted
+
+
+//TODO: implement
+
+function Knot(path,redis,meta,metaMode){
 	_.extend(this,Backbone.Events);
-	this.initialize(path,redis,params);
+	this.initialize(path,redis,meta,metaMode);
 }
 
-Knot.prototype.initialize = function(path,redis,params){
+Knot.prototype.metaModes = {MERGE:0,OVERWRITE:1,REPLACE:2};
+
+Knot.prototype.initialize = function(path,redis,meta,metaMode){
 
 	this.path = path;
 	this.redis = redis;
 	this.isReady = false;
+    if(_.isUndefined(metaMode))
+        metaMode = this.metaModes.MERGE;
 
 	var triggerReady = _.after(2,_.bind(function(){
 		//console.log('knot ready');
@@ -116,14 +135,14 @@ Knot.prototype.initialize = function(path,redis,params){
 	},this));
 	
 	this.value = null;
-	if(_.isObject(params))
-		if(_.has(params,'default')){
-			this.value = params.default;
+	if(_.isObject(meta))
+		if(_.has(meta,'default')){
+			this.value = meta.default;
 		}
 	
 	this.meta = {};
-	if(_.isObject(params)){
-		_.extend(this.meta,params);
+	if(_.isObject(meta)){
+		_.extend(this.meta,meta);
 	}
 	
 	// check database for value and if exist 
@@ -141,17 +160,46 @@ Knot.prototype.initialize = function(path,redis,params){
 	
 	// check database for meta data and if found than override default params
 	this.redis.getMeta(this.path,function(data){
+        /*
 		if(!_.isUndefined(data) && !_.isNull(data)){	
 			_.extend(this.meta,data);
 		} else {
 			this.redis.setMeta(this.path,this.meta);
 		}
 		triggerReady();
+        */
+
+        switch(metaMode){
+            case this.metaModes.MERGE:
+                _.extend(this.meta,data);
+                break;
+            case this.metaModes.OVERWRITE:
+                _.extend(data,this.meta);
+                this.meta= data;
+                break;
+            case this.metaModes.REPLACE:
+                //console.log('metaModes.REPLACE');
+                // leave this.meta as is
+                break;
+        }
+        this.redis.setMeta(this.path,this.meta); // set database meta to this meta
+        triggerReady();
 	},this);
-	
-	
+
 	this.redis.subscribe(this.path,this);
 	
+}
+
+
+// call on socket reconnection
+Knot.prototype.reconnect = function(){
+    console.log('reconnect '+this.path);
+    this.redis.subscribe(this.path,this);
+    this.redis.get(this.path,function(data){
+        if(!_.isUndefined(data) && !_.isNull(data)){
+            this.set(data);
+        }
+    },this);
 }
 
 Knot.prototype.destroy = function(){
@@ -183,7 +231,7 @@ Knot.prototype.setMeta = function(params){
 		_.extend(this.meta,params);
 		this.redis.setMeta(this.path,this.meta);
 	}
-},
+}
 
 Knot.prototype.set = function(value){
 	if(value != this.value){
@@ -191,252 +239,107 @@ Knot.prototype.set = function(value){
 		this.trigger("change", this.value);
 		this.redis.set(this.path,this.value);
 	}
-},
+}
 
 Knot.prototype.get = function(){
 	return this.value;
 }
 
-//////////////////////////////////////////////////////////////////////
-// KNOT UI
-//////////////////////////////////////////////////////////////////////
-
-function KUI(path, parentPanel, redis){
-	_.extend(this,Backbone.Events);
-	this.initialize(path, parentPanel, redis);
+Knot.prototype.change = function(callback){
+    this.on('change',callback);
+    return this;
 }
 
-KUI.prototype.initialize = function(path, parentPanel, redis){
-
-	this.path = path;
-	this.redis = redis;
-	this.panel = $('<div></div>');
-	parentPanel.append(this.panel);
-
-	this.children = [];
-	this.redis.getChildren(path,function(data){
-		if(_.isObject(data)){
-			for(n in data){
-				this.addChild(n,data[n]);						
-							
-			}
-		}
-	},this);
-}
-
-KUI.prototype.destroy = function(){
-
-	if(_.has(this,'children')){
-		for(var i=0; i<this.children.length; i++){
-			this.children[i].destroy();
-		}
-		this.children = [];
-		delete this.children;
-	}
-
-	delete this.path;
-	delete this.redis;
-	if(_.has(this,'panel')){
-		this.panel.remove();
-	}
-	delete this.panel;
-
-}
-
-KUI.prototype.addChild = function(child,meta){
-	this.children.push(new KUIelement(this.path == '' ? child : this.path+'/'+child,meta,this.redis,this));
+Knot.prototype.ready = function(callback){
+    if(this.isReady){
+        callback();
+    } else {
+        this.on('ready',callback);
+    }
+    return this;
 }
 
 //////////////////////////////////////////////////////////////////////
-// KNOT UI element
+// SIMPLIFIED KNOTS ACCESS
+/*
+ // example: (also see mknots.js)
+ // to initialize
+ var knots = Knots.singleton();
+
+ // then to access a knot
+ var knot = knots.get('path/a/b/c',optional meta parameters)
+    .ready(callback)
+    .change(callback);
+
+ knot.set(value);
+ knot.get(value);
+
+ // to get children map at a path do
+ knots.getChildren(path);
+ knots.delete(path); //TODO
+ knots.setMeta(); //TODO
+ */
 //////////////////////////////////////////////////////////////////////
 
-function KUIelement(path,meta,redis,parent){
-	
-	this.path = path;
-	this.meta = meta;
-	this.redis = redis;
-	this.parent = parent;
-	this.panel = $('<div class="KUI_element_panel"></div>');
-	this.parent.panel.append(this.panel);
-	this.titleDiv = $('<div></div>').appendTo(this.panel);
-	
-	
-		// children
-	this.hasChildren = false;
-	if(_.has(meta,'children'))
-		if(meta.children == true)
-			this.hasChildren = true;
-	this.childrenOpen = false;
-	
-	if(this.hasChildren){
-		this.childLink = $('<span>[+]</span>').appendTo(this.titleDiv);
-		this.titleDiv.append('&nbsp;');
-		this.childLink.click($.proxy(function(){
-			if(this.childrenOpen){
-				//try {
-					this.children.destroy();
-				//} catch(e){
-					//console.log('error destroying children',e);
-				//}
-				this.childLink.html('[+]');
-				this.childrenOpen = false;
-			} else {
-				this.children = new KUI(this.path,this.panel,this.redis);
-				this.childLink.html('[-]');
-				this.childrenOpen = true;
-			}
-		},this));
-	}
-	
-	this.pathLabel = $('<span>'+this.path+'</span>').appendTo(this.titleDiv);
-	
-	// type related elements
-	if(_.has(meta,'type')){
-		switch(meta.type){
-			case 'float':
-			case 'int':
-			case 'number':
-				this.knot = new Knot(this.path,this.redis,this.meta);	
-				this.knot.on('ready',function(){
-					this.titleDiv.append(':');
-					this.valueLabel = $('<span>'+this.knot.get()+'</span>').appendTo(this.titleDiv);
-					this.slider = $('<div></div>').appendTo(this.panel);
-					this.slider.slider({
-						stop : _.bind(function(event,ui){
-							this.knot.set(ui.value);
-						},this),
-						slide : _.bind(function(event,ui){
-							this.valueLabel.html(ui.value);
-						},this),
-						change : _.bind(function(event,ui){
-							this.valueLabel.html(ui.value);
-						},this),
-						value : this.knot.get()
-					});
-					
-					if(_.has(meta,'min')){
-						this.slider.slider({min:meta.min});
-					}
-					
-					if(_.has(meta,'max')){
-						this.slider.slider({max:meta.max});
-					}
-					
-					if(_.has(meta,'step')){
-						this.slider.slider({step:meta.step});
-					}
-					
-					this.knot.on('change',function(data){
-						this.slider.slider('value',data);
-					},this);
-					
-				},this);
-				break;
-			case 'boolean':
-				this.knot = new Knot(this.path,this.redis,this.meta);	
-				this.knot.on('ready',function(){
-					this.titleDiv.append(':');
-					this.valueLabel = $('<span>'+this.knot.get()+'</span>').appendTo(this.titleDiv);
-					this.checkbox = $('<input type="checkbox"></input>').appendTo(this.panel);
-					
-					// create reciprocal link between ui and knot
-					this.checkbox.change(_.bind(function(){
-						this.knot.set(this.checkbox.attr('checked') == 'checked' ? 1 : 0);
-						this.valueLabel.html(this.knot.get());
-					},this));
-					
-					this.knot.on('change',function(data){
-						this.checkbox.attr('checked',data == '1');
-						this.valueLabel.html(this.knot.get());
-					},this);
-					
-				},this);
-				break;
-			case 'string':
-				this.knot = new Knot(this.path,this.redis,this.meta);	
-				this.knot.on('ready',function(){
-					this.titleDiv.append(':');
-					this.valueLabel = $('<span>'+this.knot.get()+'</span>').appendTo(this.titleDiv);
-					this.textfield = $('<input type="text" maxLength="128" size="64" value="'+this.knot.get()+'"></input>').appendTo(this.panel);
-					
-					this.textfield.change(_.bind(function(){
-						this.knot.set(this.textfield.attr('value'));
-						this.valueLabel.html(this.knot.get());
-					},this));
-					
-					this.knot.on('change',function(data){
-						this.textfield.attr('value',this.knot.get());
-						this.valueLabel.html(this.knot.get());
-					},this);
-				},this);
-				break;
-			case 'select':
-				if(_.has(meta,'list')){
-					this.knot = new Knot(this.path,this.redis,this.meta);	
-					this.knot.on('ready',function(){
-						this.titleDiv.append(':');
-						this.valueLabel = $('<span>'+this.knot.get()+'</span>').appendTo(this.titleDiv);
-						this.select = $('<select></select>').appendTo(this.panel);
-						for(var i=0; i<meta.list.length; i++){
-							var keyVal = meta.list[i];
-							this.select.append('<option value="'+keyVal[0]+'">'+keyVal[1]+'</option>');
-						}
-						
-						this.select.change(_.bind(function(){
-							this.knot.set(this.select.val());
-							this.valueLabel.html(this.knot.get());
-						},this));
-						
-						this.knot.on('change',function(data){
-							this.select.val(this.knot.get());
-							this.valueLabel.html(this.knot.get());
-						},this);
-					},this);
-				}
-				break;
-		}
-	}
-	
-
+Knots = function(){
+    _.extend(this,Backbone.Events);
+    this.initialize();
 }
 
-KUIelement.prototype.destroy = function(){
-	if(_.has(this,'children')){
-		this.children.destroy();
-	}
-	
-	if(_.has(this,'childLink')){
-		this.childLink.unbind();
-		this.childLink.remove();
-		delete this.childLink;
-		delete this.hasChildren;
-		delete this.childrenOpen;
-	}
-	
-	if(_.has(this,'knot')){
-		this.knot.destroy();
-		delete this.knot;
-	}
-	
-	if(_.has(this,'slider')){
-		this.slider.unbind();
-		delete this.slider;
-	}
-	
-	if(_.has(this,'checkbox')){
-		this.checkbox.unbind();
-		delete this.checkbox;
-	}
-	
-	delete this.path;
-	delete this.meta;
-	delete this.redis;
-	delete this.parent;
-	delete this.titleDiv;
-	delete this.pathLabel;
-	
-	this.panel.remove();
-	delete this.panel;
-	
+Knots.singleton = function(){
+    if(!Knots._singleton){
+        Knots._singleton = new Knots();
+    }
+    return Knots._singleton;
 }
+
+Knots.prototype.initialize = function(){
+    this.socket = io.connect('http://'+window.location.host+'/knots');
+    this.redis = new Redis(this.socket);
+    this.knots = {}; // map of all knots
+    this.metaModes = Knot.prototype.metaModes;
+
+    this.socket.on('connect', _.bind(function(){
+        console.log('socket connected');
+        for(var n in this.knots){
+            this.knots[n].reconnect();
+        }
+    },this));
+
+    this.socket.on('disconnect',function(){
+        console.log('socket disconnected');
+    });
+
+    this.socket.on('connect_failed',function(){
+        console.log('socket connect_failed');
+    });
+
+    this.socket.on('error',function(){
+        console.log('socket error');
+    });
+
+    this.socket.on('reconnect',function(){
+        console.log('socket reconnect');
+    });
+
+    this.socket.on('reconnect_failed',function(){
+        console.log('socket reconnect_failed');
+    });
+
+    this.socket.on('reconnecting',function(){
+        console.log('socket reconnecting');
+    });
+}
+
+Knots.prototype.get = function(path){
+    if(!(path in this.knots)){
+        this.knots[path] = new Knot(path,this.redis);
+    }
+    return this.knots[path];
+}
+
+Knots.prototype.ready = function(callback){
+    this.on('ready',callback);
+    return this;
+}
+

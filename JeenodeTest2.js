@@ -45,6 +45,9 @@ function setup(_devicePath,_port) {
 
     sp.on('close', function () {
         log.error('serial close: '+ JSON.stringify(arguments));
+
+        // clear everything
+        // restart serial port and re-register Jeenodes
     });
 
     sp.on("data", function (data) {
@@ -62,7 +65,7 @@ function setup(_devicePath,_port) {
 
 function postSerialSetup(){
 
-    var nodeIds = [2,3];
+    var nodeIds = [2,3,4,5,6];
     for(var i=0; i<nodeIds.length; i++)
         jeenodes.push(new Jeenode(nodeIds[i]));
     currentJeenodeId = jeenodes.length - 1;
@@ -86,14 +89,14 @@ function ackFail(){
 function Jeenode(id){
     this.id = id;
     this.ledKnot = knots.get(devicePath + '/led' + this.id, {type:'boolean', default:1});
-    this.counterKnot = knots.get(devicePath + '/counter' + this.id, {type:'number', default:0, min:0,max:65536});
+    this.counterKnot = knots.get(devicePath + '/counter' + this.id, {type:'string', default:'0'},knots.metaModes.REPLACE);
 
     this.update = function(){
         var i = parseInt(this.ledKnot.get());
         var bc = Bencode.encode({_D:this.id,led:i});
-        log.debug(this.id + " : update " + i);
+        //log.debug(this.id + " : update " + i);
         sp.write(bc);
-        ackTimeout = setTimeout(ackFail,500)
+        ackTimeout = setTimeout(ackFail,500);
     }
 
     this.updateFailed = function(){
@@ -103,7 +106,7 @@ function Jeenode(id){
     this.receiveData = function(o){
         if('counter' in o){
             this.counterKnot.set(parseInt(o.counter));
-            log.debug(this.id + " : " + o.counter);
+            //log.debug(this.id + " : " + o.counter);
         } else {
             log.error(this.id + 'did not receive counter')
         }
