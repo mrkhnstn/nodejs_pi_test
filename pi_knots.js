@@ -51,8 +51,10 @@ function initializeKnotsModules(){
 
         // setup continuous pinging of server
         pingKnot = knots.get(deviceId+'/ping',{type:'string'});
-        pingServer();
-        setInterval(pingServer,10000);
+        pingKnot.ready(function(){
+            pingServer();
+            setInterval(pingServer,10000);
+        })
 
         startNumKnot = knots.get(deviceId+'/start_num',{type:'number',default:0});
         startNumKnot.ready(function(){
@@ -73,14 +75,17 @@ function initializeKnotsModules(){
         //arduinoTest = require('./ArduinoKnotTest.js');
         //arduinoTest.setup(deviceId+'/arduino_test',portName);
 
-        arduinoTestBencode = require('./ArduinoKnotTestBencode.js');
-        arduinoTestBencode.setup(deviceId+'/arduino_test_bencode',portName);
+        //arduinoTestBencode = require('./ArduinoKnotTestBencode.js');
+        //arduinoTestBencode.setup(deviceId+'/arduino_test_bencode',portName);
 
         //jeenodeTest1 = require('./JeenodeTest1.js');
         //jeenodeTest1.setup(deviceId+'/jeenode_test_1');
 
-        jeenodeTest2 = require('./JeenodeTest2.js');
-        jeenodeTest2.setup(deviceId+'/jeenode_test_2',isPi ? '/dev/ttyUSB0' : '/dev/tty.usbserial-AE01BQR1');
+        //jeenodeTest2 = require('./JeenodeTest2.js');
+        //jeenodeTest2.setup(deviceId+'/jeenode_test_2',isPi ? '/dev/ttyUSB0' : '/dev/tty.usbserial-AE01BQR1');
+
+        jeenodeTest3 = require('./JeenodeTest3.js');
+        jeenodeTest3.setup(deviceId+'/jeenode_test_3',isPi ? '/dev/ttyUSB0' : '/dev/tty.usbserial-AE01BQR1');
 
         //arduinoBencodeDictTest = require('./ArduinoBencodeDictTest.js');
         //arduinoBencodeDictTest.setup(deviceId+'/arduino_bencode_test','/dev/tty.usbmodemfd1241',redisBase);

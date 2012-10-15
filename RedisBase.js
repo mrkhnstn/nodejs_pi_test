@@ -3,6 +3,7 @@ var util = require("util");
 var events = require("events");
 
 var log = require('./Log.js').log;
+var redis = require("redis");
 
 exports.RedisBase = RedisBase;
 
@@ -15,7 +16,7 @@ util.inherits(RedisBase, events.EventEmitter);
 
 RedisBase.prototype.connect = function(host,port,pw){
 
-	var triggerReady = _.after(2,_.bind(function(){
+	this.triggerReady = _.after(2,_.bind(function(){
 		log.debug('RedisBase ready');
 		this.emit('ready');
 	},this));
@@ -28,74 +29,104 @@ RedisBase.prototype.connect = function(host,port,pw){
 	this.host = host || '127.0.0.1' ;
 	this.port = port || 6379;
 	this.pw = pw || null;
-	log.debug('redis host:',this.host);
+	log.debug('redis host: '+this.host);
 	this.subObjects = {};
 	
-	var redis = require("redis");
+
 	
-	log.debug("creating pubClient"); 
-	this.pubClient = redis.createClient(this.port,this.host);
-	
-	if(this.pw !== null){
-		log.debug("authenticating pubClient"); 
-		this.pubClient.auth(this.pw, function (err) {
-			if (err) { 
-				log.error("pubClient authentication error",err);
-			} else {
-				log.debug("pubClient authenticated"); 
-			}
-		});
-	}
-	
-	this.pubClient.on("error", function (err) {
-		log.error("pubClient error",err);
-        process.exit(1); // currently exits on error
-        //TODO: improve error handling
-	});
-	
-	this.pubClient.on("ready", function () {
-		log.debug("pubClient ready");
-		triggerReady();
-	});
-	
-	log.debug("creating subClient"); 
-	this.subClient = redis.createClient(this.port,this.host);
-	
-	if(this.pw != null){
-		log.debug("authenticating subClient"); 
-		this.subClient.auth(this.pw, function (err) {
-			if (err) { 
-				log.error("subClient authentication error",err);
-			} else {
-				log.debug("subClient authenticated"); 
-			}
-		});
-	}
-	
-	this.subClient.on("error", function (err) {
-		log.error("subClient error",err);
-        process.exit(1); // currently exits on error
-        //TODO: improve error handling
-	});
-	
-	var self = this;
-	
-	this.subClient.on("ready", function(){
-		log.debug("subClient ready");
-		self.subClient.on("message", function(path, message){
-			
-			if(_.has(self.subObjects,path)){
-				var listeners = self.subObjects[path];
-				
-				for(var i=0; i<listeners.length; i++){
-					listeners[i].message(path,message);
-				}
-			}
-		});
-		triggerReady();
-	});
+    this.setupPubClient();
+	this.setupSubClient();
+
 }
 
+RedisBase.prototype.setupPubClient = function(){
+    log.debug("SETTING UP REDIS PUB CLIENT");
+
+    if(_.isObject(this.pubClient)){
+        // pub client exists already
+        this.pubClient.removeAllListeners();
+        this.pubClient = null;
+    }
+
+    this.pubClient = redis.createClient(this.port,this.host);
+
+    if(this.pw !== null){
+        log.debug("authenticating pubClient");
+        this.pubClient.auth(this.pw, function (err) {
+            if (err) {
+                log.error("pubClient authentication error",err);
+            } else {
+                log.debug("pubClient authenticated");
+            }
+        });
+    }
+
+    this.pubClient.on("error", _.bind(function (err) {
+        log.error("pubClient error: "+err);
+        //process.exit(1);
+        setTimeout(_.bind(this.setupPubClient,this),1000); // try setting up new pub client
+    },this));
+
+    this.pubClient.on("ready", _.bind(function () {
+        log.debug("pubClient ready");
+        this.triggerReady();
+    },this));
+}
+
+RedisBase.prototype.setupSubClient = function(){
+    log.debug("SETTING UP REDIS SUB CLIENT");
+
+    if(_.isObject(this.subClient)){
+        // pub client exists already
+        this.subClient.removeAllListeners();
+        this.subClient = null;
+    }
+
+    this.subClient = redis.createClient(this.port,this.host);
+
+    if(this.pw != null){
+        log.debug("authenticating subClient");
+        this.subClient.auth(this.pw, function (err) {
+            if (err) {
+                log.error("subClient authentication error: "+err);
+            } else {
+                log.debug("subClient authenticated");
+            }
+        });
+    }
+
+    this.subClient.on("error", _.bind(function (err) {
+        log.error("subClient error: "+err);
+        //process.exit(1); // currently exits on error
+        setTimeout(_.bind(this.setupSubClient,this),1000); // try setting up new sub client after a short delay
+    },this));
+
+    this.subClient.on("ready", _.bind(function(){
+        log.debug("subClient ready");
+
+        // subscribe to existing knots if subclient is reconnecting
+        for(var n in this.subObjects){
+            this.subClient.subscribe(n);
+        }
+
+        // hook up subscribe message callback
+        this.subClient.on("message", _.bind(this.receiveSubMessage,this));
+
+        this.triggerReady();
+    },this));
+}
+
+RedisBase.prototype.receiveSubMessage = function(path, message){
+    if(_.has(this.subObjects,path)){
+        var listeners = this.subObjects[path];
+        for(var i=0; i<listeners.length; i++){
+            listeners[i].message(path,message);
+        }
+    }
+
+}
+
+// TODO: simplify (nested listener / event system not necessary as knots are already being pooled in Knot.js, meaning for each subscription there will only be one knot)
 RedisBase.prototype.subscribe = function(path,subscriber){
 
 	if(_.has(this.subObjects,path)){
@@ -103,7 +134,7 @@ RedisBase.prototype.subscribe = function(path,subscriber){
 		this.subObjects[path].push(subscriber);
 	} else {
 		this.subObjects[path] = [subscriber];
-		this.subClient.subscribe(path);
+        this.subClient.subscribe(path);
 	}
 
 }
@@ -131,15 +162,9 @@ RedisBase.prototype.unsubscribe = function(path,subscriber){
 
 }
 
-RedisBase.prototype.get = function(path,fn,scope){
+RedisBase.prototype.get = function(path,callback){
 	this.pubClient.get(path,function(err,res){
-		if(_.isFunction(fn)){
-			if(_.isUndefined(scope)){
-				fn(res,err);
-			} else {
-				fn.apply(scope,[res,err]);
-			}
-		}
+		callback(res,err);
 	});
 }
 
@@ -184,7 +209,7 @@ RedisBase.prototype.addChildren = function(path,name){
 	});
 }
 
-RedisBase.prototype.getMeta = function(path,fn,scope){
+RedisBase.prototype.getMeta = function(path,callback){
 
 	var index = path.lastIndexOf('/');
 	if(index != -1){
@@ -194,28 +219,34 @@ RedisBase.prototype.getMeta = function(path,fn,scope){
 		parentPath = '?';
 		childName = path;
 	}
-	
-	this.pubClient.hget(parentPath,childName,function(err,res){
-		if(_.isFunction(fn)){
-			if(_.isUndefined(scope)){
-				if(_.isString(res))
-					res = JSON.parse(res);
-				fn(res,err);
-			} else {
-				fn.apply(scope,[res,err]);
-			}
-		}
+
+    var meta = {};
+
+    var multi = this.pubClient.multi();
+
+	multi.hget(parentPath,childName,function(err,res){
+        if(_.isString(res))
+            res = JSON.parse(res);
+        _.extend(meta,res);
 	});
+
+    multi.get(path,function(err,res){
+        meta.value = res;
+    })
+
+    multi.exec(function(data){
+       //console.log('multi.getMeta',meta);
+       callback(meta);
+    });
 }
 
-RedisBase.prototype.getChildren = function(path,fn,scope){
+RedisBase.prototype.getChildren = function(path,callback){
 
     var self = this;
-    var fn = fn;
-    var scope = scope;
 
 	this.pubClient.hgetall(path === '' ? '?' : '?/'+path,function(err,res){
 		if(_.isObject(res)){
+            // console.log('getChildren',res);
 			// convert object values from strings to objects
 			for(var n in res){
 				res[n] = JSON.parse(res[n]);
@@ -225,25 +256,15 @@ RedisBase.prototype.getChildren = function(path,fn,scope){
             var multi = self.pubClient.multi();
             for(var n in res){
                 multi.get(path + '/' + n, _.bind(function(err,data){
-                    //console.log(this.name,data);
                     if(!_.isNull(data)){
                         res[this.name].value = data;
                     }
                 },{name:n}))
             }
 
-
-            var receivedValuesCallback = function(err,replies){
-                //console.log('multi done',replies);
-                if(_.isFunction(fn)){
-                    if(_.isUndefined(scope)){
-                        fn(res,err);
-                    } else {
-                        fn.apply(scope,[res,err]);
-                    }
-                }
-            }
-            multi.exec(receivedValuesCallback);
+            multi.exec(function(err,replies){
+                callback(res,err);
+            });
 		}
 	});
 }
@@ -264,9 +285,7 @@ RedisBase.prototype.delete = function(path,recursive){
         this.pubClient.hgetall(path === '' ? '?' : '?/'+path,function(err,res){
             if(_.isObject(res)){
                 for(var n in res){
-                    //res[n] = JSON.parse(res[n]);
                     var childPath = path+'/'+n;
-                    //console.log('childPath:',childPath);
                     self.delete(childPath,true);
                 }
             }

@@ -25,7 +25,7 @@ var sendTime, receiveTime;
 
 exports.setup = setup;
 function setup(_devicePath,_serialPort, _redis){
-    devicePath = _devicePath
+    knotsPath = _devicePath
     portName = _serialPort;
 
 

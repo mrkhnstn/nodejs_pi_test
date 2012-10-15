@@ -26,7 +26,7 @@ var lastTime;
 exports.setup = setup;
 function setup(_devicePath) {
 
-    devicePath = _devicePath
+    knotsPath = _devicePath
 
     // setup serial port
     sp = new SerialPort(portName, {

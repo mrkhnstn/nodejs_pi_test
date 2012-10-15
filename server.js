@@ -5,11 +5,8 @@ var express = require('express')
   , _ = require('underscore');
 
 var Knot = require('./Knot.js').Knot;
-var RedisBase = require('./RedisBase.js').RedisBase;
-var RedisSocketServer = require('./RedisSocketServer.js').RedisSocketServer;
-
-var redisBase;
-var redisSocketServer;
+var KnotsSocketServer = require('./RedisSocketServer.js').KnotsSocketServer;
+var knotsSocketServer;
 
 ////////////////////////////////////////////////////////////////////////////
 // start server
@@ -35,8 +32,12 @@ app.configure('development', function(){
 
 app.get('/', routes.index);
 
+app.get('/test',function(req,res){
+	res.render('test');
+});
+
 app.get('/knots',function(req,res){
-	res.render('knots',{path:''});
+    res.render('knots',{path:''});
 });
 
 app.get('/knots/*',function(req,res){
@@ -62,33 +63,35 @@ app.post('/login', function(req, res){
    	res.send('login success');
 });
 
+knots = require('./Knot').singleton();
+knots.ready(function(){
+    knotsSocketServer = new KnotsSocketServer();
+    //knots.get('test/number',{type:'number',value:50,min:0,max:100});
+    //knots.get('test/string',{type:'string',value:'hello'});
+    //knots.get('test/boolean',{type:'boolean',value:1});
+    knots.get('test/labelTest',{type:'boolean', value:1, label:'this is a label'});
+    var buttonKnot = knots.get('test/button',{type:'button',value:0});
+    buttonKnot.change(function(){
+        console.log('button triggered');
+    })
+    //knots.get('test/list',{type:'list',value:0,list:['mark','hannah','ken','mizuki']});
+
+    setupExpressServer();
+});
+
 ////////////////////////////////////////////////////////////////////////////
-// start server
+// express server
 ////////////////////////////////////////////////////////////////////////////
 
-var server = http.createServer(app);
-server.listen(app.get('port'), function(){
-  	console.log("Express server listening on port " + app.get('port'));
-  	var webbynodeIP = '173.246.41.66';
-	redisBase = new RedisBase(webbynodeIP);
-	redisBase.on('ready',function(){
-		console.log('create redisSocketServer');
-		redisSocketServer = new RedisSocketServer(redisBase);
-		setupSocket();
-	});
-	
-	/*
-	var f1 = new Knot('a/b/f1',redisBase,{default:1,type:'int',min:1,max:10});
-	f1.on("change",function(f){
-		console.log('f1,changed',f);
-	});
-	
-	var f1_2 = new Knot('a/b/f1',redisBase);
-	f1_2.on("change",function(f){
-		console.log('f1_2,changed',f);
-	});
-	*/
-});
+var server;
+
+function setupExpressServer(){
+    server = http.createServer(app);
+    server.listen(app.get('port'), function(){
+        console.log("Express server listening on port " + app.get('port'));
+        setupSocket();
+    });
+}
 
 ////////////////////////////////////////////////////////////////////////////
 // socket.io
@@ -113,75 +116,6 @@ function setupSocket(){
 	});
 
 	sockets = io.of('/knots').on('connection', function (socket) {
-		redisSocketServer.connect(socket);
+		knotsSocketServer.connect(socket);
 	});
 }
-
-
-
-
-
-/*
-
-
-
-var f1 = new Knot('a/b/f1',redis,{default:1,type:'int',min:1,max:10});
-f1.on("change",function(f){
-	console.log('f1,changed',f);
-});
-
-var log = _.bind(f1.set, f1);
-_.delay(log, 1000, 6);
-_.delay(log, 3000, 7);
-*/
-
-/*
-console.log('f1====',f1);
-var f2 = new Knot('a/b/f2',{default:2,min:1,max:10});
-var f3 = new Knot('f3',{min:1,max:5});
-var f4 = new Knot('a/b/c/f4',{min:1,max:5});
-*/
-
-//f1.set(4);
-
-/*
-var path = "/hello/mark";
-var index = path.lastIndexOf('/');
-if(index != -1){
-	var parent = path.substr(0,index);
-	var child = path.substr(index+1);
-}
-*/
-
-/*
-redis.createField('a/b/f1',JSON.stringify({type:'float', min:0, max:1}));
-redis.createField('a/b/b1',JSON.stringify({type:'boolean'}));
-redis.createField('a/b/c/b2',JSON.stringify({type:'boolean'}));
-redis.getFields('a/b',function(res){
-	console.log(res);
-});
-*/
-
-/*
-redis.getChildren('',function(res,err){
-	console.log('getChildren *:',res);
-});
-
-redis.getChildren('a',function(res,err){
-	console.log('getChildren a:',res);
-});
-
-redis.getChildren('a/b',function(res,err){
-	console.log('getChildren a/b:',res);
-});
-*/
-
-/*
-redis.getMeta('a/b/f1',function(res,err){
-	console.log(res);
-});
-
-redis.getMeta('a/b/f3',function(res,err){
-	console.log(res);
-});
-*/

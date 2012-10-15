@@ -13,7 +13,7 @@ var knots = require('./Knot.js').singleton();
 exports.setup = setup;
 function setup(_devicePath, _serialPort) {
 
-    devicePath = _devicePath
+    knotsPath = _devicePath
     portName = _serialPort;
 
     // setup serial port
@@ -52,7 +52,7 @@ function setup(_devicePath, _serialPort) {
     function setupKnots() {
 
         // setup knots for actuators
-        inKnots.led = knots.get(devicePath + '/led', {type:'boolean', default:1});
+        inKnots.led = knots.get(knotsPath + '/led', {type:'boolean', default:1});
         var ledKnotChanged = function () {
             console.log('ledKnotChanged',inKnots.led.get());
             sp.write('led:' + inKnots.led.get() + '\r');
@@ -61,7 +61,7 @@ function setup(_devicePath, _serialPort) {
             .ready(ledKnotChanged)
             .change(ledKnotChanged);
 
-        inKnots.pwm = knots.get(devicePath + '/pwm', {type:'int', default:0, min:0, max:255});
+        inKnots.pwm = knots.get(knotsPath + '/pwm', {type:'int', default:0, min:0, max:255});
         var pwmKnotChanged = function () {
             console.log('pwmKnotChanged');
             sp.write('pwm:' + inKnots.pwm.get() + '\r');
@@ -70,7 +70,7 @@ function setup(_devicePath, _serialPort) {
             .ready(pwmKnotChanged)
             .change(pwmKnotChanged);
 
-        inKnots.servo = knots.get(devicePath + '/servo', {type:'int', default:0, min:0, max:180});
+        inKnots.servo = knots.get(knotsPath + '/servo', {type:'int', default:0, min:0, max:180});
         var servoKnotChanged = function () {
             sp.write('servo:' + inKnots.servo.get() + '\r');
         };
@@ -79,8 +79,8 @@ function setup(_devicePath, _serialPort) {
             .change(servoKnotChanged);
 
         // setup knots for sensors
-        outKnots.analog = knots.get(devicePath + '/analog', {type:'int', default:0, min:0, max:1024});
-        outKnots.button = knots.get(devicePath + '/button', {type:'boolean', default:0});
+        outKnots.analog = knots.get(knotsPath + '/analog', {type:'int', default:0, min:0, max:1024});
+        outKnots.button = knots.get(knotsPath + '/button', {type:'boolean', default:0});
 
     }
 }

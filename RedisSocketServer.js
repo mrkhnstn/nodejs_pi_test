@@ -2,80 +2,77 @@ var _ = require('underscore');
 var util = require("util");
 var events = require("events");
 
-var RedisSocketClient = function(socket){
-	this.socket = socket;
-}
-
-exports.RedisSocketServer = RedisSocketServer;
-function RedisSocketServer(redisBase){
+exports.KnotsSocketServer = KnotsSocketServer;
+function KnotsSocketServer(){
 	events.EventEmitter.call(this);
-	this.initialize(redisBase);
+	this.initialize();
 }
 
-util.inherits(RedisSocketServer, events.EventEmitter);
+util.inherits(KnotsSocketServer, events.EventEmitter);
 
-RedisSocketServer.prototype.initialize = function(redisBase){
-	this.redis = redisBase;
+KnotsSocketServer.prototype.initialize = function(redisBase){
+    this.knots = require('./Knot').singleton();
 }
 
-RedisSocketServer.prototype.connect = function(socket){
+KnotsSocketServer.prototype.connect = function(socket){
 	
 	var self = this;
-	
-	var listener = {
-		message : function(path,message){
-			console.log('msg',path,message);
-			socket.emit('message',{path:path,message:message});
-		}
-	}
-	
-	socket.on("subscribe",function(data){
-		self.redis.subscribe(data.path,listener);
-	});
-	
+    var listeners = {};
+    var unregisterListener = function(o){
+        socket.removeListener('path', o.setValue);
+        socket.removeListener('_/set_meta/'+ o.knot.path, o.setMeta);
+        o.knot.removeListener('change',o.change);
+    }
+
+    socket.on('_/register_knot',function(path,fn){
+
+        var o = {};
+        o.knot = self.knots.get(path);
+        o.socket = socket;
+
+        o.change = _.bind(function(value){
+            this.socket.emit(this.knot.path,value);
+        },o);
+
+        o.setValue = _.bind(function(value){
+            //console.log('socket.setValue',value);
+            this.knot.set(value);
+        },o);
+
+        o.setMeta = _.bind(function(meta){
+            //console.log('socket.setMeta',meta);
+            this.knot.setMeta(meta);
+        },o);
+
+        o.knot.ready(fn);
+        o.knot.change(o.change);
+
+        socket.on(path, o.setValue);
+        socket.on('_/set_meta/'+path, o.setMeta);
+
+        listeners[path] = o;
+
+    });
+
+    socket.on('_/unregister_knot',function(path){
+        if(path in listeners){
+            unregisterListener(listeners.path);
+            delete listeners.path;
+        }
+    });
 
 	socket.on("disconnect",function(data){
-		//TODO: clean up subscribes
-        console.log("socket disconnected")
+        //console.log("socket disconnected");
+        for(n in listeners){
+            unregisterListener(listeners[n]);
+        }
+        listeners = null;
 	});
 
-	
-	socket.on("unsubscribe",function(data){
-		self.redis.unsubscribe(data.path,listener);
-	});
-	
-	socket.on("get",function(data){
-		self.redis.get(data.path,function(res,err){
-		 	//data.res = res;
-		 	//data.err = err;
-			data.value = res;
-			socket.emit("get",data);
+	socket.on("_/get_children",function(path,fn){
+		self.knots.getChildren(path,function(res,err){
+            fn(res);
 		});
 	});
-	
-	socket.on("set",function(data){
-		console.log(data);
-		self.redis.set(data.path,data.value);
-	});
-	
-	socket.on("setMeta",function(data){
-		self.redis.setMeta(data.path,data.meta);
-	});
-	
-	socket.on("getMeta",function(data){
-			self.redis.getMeta(data.path,function(res,err){
-			data.meta = res;
-		 	//data.err = err;
-			socket.emit("getMeta",data);
-		});
-	});
-	
-	socket.on("getChildren",function(data){
-		self.redis.getChildren(data.path,function(res,err){
-			data.children = res;
-			socket.emit("getChildren",data);
-		});
-	});
-	
 	
 }

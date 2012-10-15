@@ -24,7 +24,7 @@ var jeenodes = [];
 exports.setup = setup;
 function setup(_devicePath,_port) {
 
-    devicePath = _devicePath;
+    knotsPath = _devicePath;
     portName = _port;
     log.debug("Serialport: "+portName)
 
@@ -88,8 +88,8 @@ function ackFail(){
 
 function Jeenode(id){
     this.id = id;
-    this.ledKnot = knots.get(devicePath + '/led' + this.id, {type:'boolean', default:1});
-    this.counterKnot = knots.get(devicePath + '/counter' + this.id, {type:'string', default:'0'},knots.metaModes.REPLACE);
+    this.ledKnot = knots.get(knotsPath + '/led' + this.id, {type:'boolean', default:1});
+    this.counterKnot = knots.get(knotsPath + '/counter' + this.id, {type:'string', default:'0'},knots.metaModes.REPLACE);
 
     this.update = function(){
         var i = parseInt(this.ledKnot.get());
