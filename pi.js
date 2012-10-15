@@ -12,9 +12,12 @@ var express = require('express')
 ////////////////////////////////////////////////////////////////////////////
 var deviceId = "00:00:00:00:00:00";
 var socketAddress = 'http://5.157.248.122:3333';
+//var socketAddress = 'http://mrkhnstn.pi.jit.su:80';
 var socketNamespace = 'pi';
 var socketId = "";
 var socket = null;
+
+var directRedisEnabled = true;
 
 var serial = null;
 var echo = null;
@@ -24,6 +27,9 @@ var arduino = null;
 
 var messageObjects = {};
 var pubSubObjects = {};
+
+var isPi = require('os').platform() == "linux";
+console.log('isPi',isPi);
 
 ////////////////////////////////////////////////////////////////////////////
 // setup express
@@ -95,6 +101,10 @@ function setupSocket(){
 
 	socket.on('connect',function(){
 		console.log("socket connected");
+	});
+
+	socket.on('ready',function(){
+		console.log("socket ready");
 		
 		socket.emit('register_pi',deviceId);
 		
@@ -120,14 +130,18 @@ function setupSocket(){
 		
 		if(gpio == null){
 			gpio = require('./GPIO');
-			gpio.setup(deviceId,socket);
+			gpio.setup(deviceId,socket); //TODO: take out socket here (initialization should work without socket)
 			pubSubObjects['gpio'] = gpio;
 		}
 		
 		if(arduino == null){
-			arduino = require('./ArduinoModuleTest');
-			arduino.setup(deviceId,'arduino');
-			pubSubObjects['arduino'] = arduino;
+			var arduinoId = 'arduino';
+			var subscribeToVars = ['led','pwm','servo'];
+			var portName = isPi ? '/dev/ttyACM0' : '/dev/tty.usbmodemfa131'
+			
+			arduino = require('./Arduino');
+			arduino.setup(deviceId,arduinoId,portName,subscribeToVars);
+			pubSubObjects[arduinoId] = arduino;
 		}
 		/////////////////////////////////////////
 		// register socket with objects

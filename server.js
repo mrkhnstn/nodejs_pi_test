@@ -1,8 +1,16 @@
 var express = require('express')
-  , routes = require('./routes')
+  , routes = require('./routes')	
   , http = require('http')
   , path = require('path')
-  , redis = require("redis");
+  , _ = require('underscore');
+
+var Knot = require('./Knot.js').Knot;
+var KnotsSocketServer = require('./RedisSocketServer.js').KnotsSocketServer;
+var knotsSocketServer;
+
+////////////////////////////////////////////////////////////////////////////
+// start server
+////////////////////////////////////////////////////////////////////////////
 
 var app = express();
 
@@ -22,220 +30,92 @@ app.configure('development', function(){
   app.use(express.errorHandler());
 });
 
-//app.get('/', routes.index);
+app.get('/', routes.index);
 
+app.get('/test',function(req,res){
+	res.render('test');
+});
+
+app.get('/knots',function(req,res){
+    res.render('knots',{path:''});
+});
+
+app.get('/knots/*',function(req,res){
+	if(req.params.length > 0){
+		res.render('knots',{path:req.params[0]});
+	} else {
+		res.render('knots',{path:''});
+	}
+});
+
+/*
 app.get('/', function(req, res){
-  res.send('server says hello :)');
+  res.render('index',
+  {
+  	
+  });
+});
+*/
+
+app.post('/login', function(req, res){
+	console.log('user:'+req.body.user);
+	console.log('password:'+req.body.password);
+   	res.send('login success');
+});
+
+knots = require('./Knot').singleton();
+knots.ready(function(){
+    knotsSocketServer = new KnotsSocketServer();
+    //knots.get('test/number',{type:'number',value:50,min:0,max:100});
+    //knots.get('test/string',{type:'string',value:'hello'});
+    //knots.get('test/boolean',{type:'boolean',value:1});
+    knots.get('test/labelTest',{type:'boolean', value:1, label:'this is a label'});
+    var buttonKnot = knots.get('test/button',{type:'button',value:0});
+    buttonKnot.change(function(){
+        console.log('button triggered');
+    })
+    //knots.get('test/list',{type:'list',value:0,list:['mark','hannah','ken','mizuki']});
+
+    setupExpressServer();
 });
 
 ////////////////////////////////////////////////////////////////////////////
-// start server
+// express server
 ////////////////////////////////////////////////////////////////////////////
 
-var server = http.createServer(app);
-server.listen(app.get('port'), function(){
-  console.log("Express server listening on port " + app.get('port'));
-});
+var server;
+
+function setupExpressServer(){
+    server = http.createServer(app);
+    server.listen(app.get('port'), function(){
+        console.log("Express server listening on port " + app.get('port'));
+        setupSocket();
+    });
+}
 
 ////////////////////////////////////////////////////////////////////////////
 // socket.io
 ////////////////////////////////////////////////////////////////////////////
 
-var io = require('socket.io').listen(server);
+var io;
+var sockets;
 
-io.configure(function () {
-	io.set('transports', [
-		'websocket'
-	  , 'htmlfile'
-	  , 'xhr-polling'
-	  , 'jsonp-polling'
-	  ]);
-	io.disable('log');
-});
+function setupSocket(){
 
-//
+  	console.log("setting up socket.io");
+  	io = require('socket.io').listen(server);
 
-var browserSockets = io.of('/browser').on('connection', function (socket) {
-  
-  	///////////////////////////////////////////////////////////
-	// redis related
-	var pubClient = redis.createClient();
-	var subClient = redis.createClient();
-
-	pubClient.on("error", function (err) {
-		console.error("Error " + err);
+	io.configure(function () {
+		io.set('transports', [
+			'websocket'
+		  , 'htmlfile'
+		  , 'xhr-polling'
+		  , 'jsonp-polling'
+		  ]);
+		io.disable('log');
 	});
 
-	subClient.on("error", function (err) {
-		console.error("Error " + err);
+	sockets = io.of('/knots').on('connection', function (socket) {
+		knotsSocketServer.connect(socket);
 	});
-
-	//subClient.subscribe("myDate");
-
-	subClient.on("message", function (channel, message) {
-		console.log('message: '+channel + " > " + message);
-		socket.emit("msg",{key:channel,value:message});
-	});
-
-	socket.on('get',function(data){
-  		pubClient.get(data,function(err,reply){
-  			socket.emit('get',{key:data,value:reply});
-  		});
-  	});
-  	
-  	socket.on('set',function(data){
-  		console.log(data);
-  		pubClient.set(data.key,data.value);
-  	});
-  	
-  	socket.on('sub',function(data){
-  		//TODO: type checking
-  		for(var i=0; i<data.length; i++){
-  			console.log('subscribe: '+data[i]);
-  			subClient.subscribe(data[i]);
-  		}
-  	});
-  	
-  	socket.on('pub',function(data){
-  		//TODO: type checking
-  		for(var i=0; i<data.length; i++){
-  			pubClient.set(data[i].key,data[i].value);
-			pubClient.publish(data[i].key,data[i].value);
-  		}
-  	});
-
-	socket.on('disconnect',function(){
-		pubClient.quit();
-		subClient.quit();
-	});
-  
-  	// request gpio list from pi
-  	piSockets.emit('get_gpio',{});
-	
-	// route browser gpio object to pis
-  	socket.on('gpio',function(data){
-  		//console.log("browser_gpio:"+data.toString());
-  		piSockets.emit('gpio',data);
-  	});
-  	
-  	//
-  	
-  	socket.on('echo',function(data){
-  		piSockets.emit('echo',data);
-  	});
-});
-
-//
-
-var piSockets = io.of('/pi').on('connection', function (socket) {
-
-	var id = 0;
-	socket.on('id',function(data){
-		id=data;
-	});
-
-	socket.on('disconnect',function(){
-		pubClient.quit();
-		subClient.quit();
-	});
-
-	///////////////////////////////////////////////////////////
-	// redis related
-	var pubClient = redis.createClient();
-	var subClient = redis.createClient();
-
-	pubClient.on("error", function (err) {
-		console.error("Error " + err);
-	});
-
-	subClient.on("error", function (err) {
-		console.error("Error " + err);
-	});
-
-	//subClient.subscribe("myDate");
-
-	subClient.on("message", function (channel, message) {
-		console.log('message: '+channel + " > " + message);
-		socket.emit("msg",{key:channel,value:message});
-	});
-
-	socket.on('get',function(data){
-  		pubClient.get(data,function(err,reply){
-  			socket.emit('get',{key:data,value:reply});
-  		});
-  	});
-  	
-  	socket.on('set',function(data){
-  		console.log(data);
-  		pubClient.set(data.key,data.value);
-  	});
-  	
-  	socket.on('sub',function(data){
-  		//TODO: type checking
-  		for(var i=0; i<data.length; i++){
-  			console.log('subscribe: '+data[i]);
-  			subClient.subscribe(data[i]);
-  		}
-  	});
-  	
-  	socket.on('pub',function(data){
-  		//TODO: type checking
-  		for(var i=0; i<data.length; i++){
-  			pubClient.set(data[i].key,data[i].value);
-			pubClient.publish(data[i].key,data[i].value);
-  		}
-  	});
-
-
-
-	///////////////////////////////////////////////////////////
-
-	// request gpio list from pi
-  	socket.emit('get_gpio',{}); 
-
-	// route pi gpio object to browsers
-  	socket.on('gpio',function(data){
-  		console.log("gpio:"+data.toString());
-  		browserSockets.emit('gpio',data);
-  	});
-  	
-  	socket.on('echo',function(data){
-  		browserSockets.emit('echo',data);
-  	});
-
-});
-
-////////////////////////////////////////////////////////////////////////////
-// redis example
-////////////////////////////////////////////////////////////////////////////
-
-/*
-
-pubClient.get("foo", function(err, reply) {
-    // reply is null when the key is missing
-    console.log(reply);
-});
-
-pubClient.get("asdfas",function(err,replay){
-	console.log(""+err);
-	console.log("found: "+(replay == null));
-});
-
-
-var redisTimer = setInterval(function(){
-	var s = (new Date()).toString();
-	pubClient.set("myDate",s);
-	pubClient.publish("myDate",s);
-},1000);
-
-client.set("string key", "string val", redis.print);
-client.hset("hash key", "hashtest 1", "some value", redis.print);
-client.hset(["hash key", "hashtest 2", "some other value"], redis.print);
-client.hkeys("hash key", function (err, replies) {
-	console.log(replies.length + " replies:");
-	replies.forEach(function (reply, i) {
-		console.log("    " + i + ": " + reply);
-	});
-	client.quit();
-});
-*/
+}

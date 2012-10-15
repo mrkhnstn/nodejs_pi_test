@@ -1,3 +1,7 @@
+addons=(redis)
 nodejs_port=3333
-nodejs_proxy=Y
 engine=nodejs
+database_name=nodejspi
+database_user=nodejspi
+database_password=
+nodejs_proxy=Y
