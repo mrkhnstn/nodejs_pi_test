@@ -37,18 +37,21 @@ Knot.prototype.initialize = function(path,socket,meta,metaMode){
                 this.value = meta.value;
 
             switch(this.metaMode){
-                case metaModes.MERGE:
+                case this.metaModes.MERGE:
                     _.extend(this.meta,meta);
                     //console.log('Knot.changedMeta.MERGE',this.meta);
                     break;
-                case metaModes.OVERWRITE:
+                case this.metaModes.OVERWRITE:
                     _.extend(meta,this.meta);
                     this.meta= meta;
                     //console.log('Knot.changedMeta.OVERWRITE',this.meta);
                     break;
-                case metaModes.REPLACE:
+                case this.metaModes.REPLACE:
                     //console.log('metaModes.REPLACE');
                     // leave this.meta as is
+                    if(_.has(this.meta,'value')){
+                        this.set(this.meta.value);
+                    }
                     break;
             }
 

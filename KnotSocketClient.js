@@ -44,7 +44,7 @@ Knot.prototype.initialize = function(path,socket,meta,metaMode){
         this.meta = {};
 
     // initialize knot value
-    this.value = null;
+    this.value = 0;
 
     this.metaReceived = _.bind(function(meta){
 
@@ -66,7 +66,7 @@ Knot.prototype.initialize = function(path,socket,meta,metaMode){
                     //console.log('Knot.changedMeta.OVERWRITE',this.meta);
                     break;
                 case metaModes.REPLACE:
-                    console.log('metaModes.REPLACE',this.path,this.meta.value);
+                    //console.log('metaModes.REPLACE',this.path,this.meta.value);
                     // leave this.meta as is
                     if(_.has(this.meta,'value')){
                         this.set(this.meta.value);

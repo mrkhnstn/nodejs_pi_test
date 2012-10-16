@@ -88,7 +88,9 @@ Knot.prototype.initialize = function(path,redis,meta,metaMode){
     this.redis = redis;
     this.isReady = false;
     if(_.isUndefined(metaMode))
-        metaMode = metaModes.MERGE;
+        this.metaMode = this.metaModes.MERGE;
+    else
+        this.metaMode = metaMode;
 
     this.value = 0;
     if(_.isObject(meta))
@@ -105,11 +107,11 @@ Knot.prototype.initialize = function(path,redis,meta,metaMode){
 	this.redis.getMeta(this.path, _.bind(function(meta,err){
         //console.log('Knot.gotMeta',meta);
 
-		if(!_.isNull(meta)){ // database meta with values available
+        if(!_.isUndefined(meta) && _.isObject(meta)){ // database meta with values available
 
             //console.log('Knot.process',meta);
 
-            switch(metaMode){
+            switch(this.metaMode){
                 case metaModes.MERGE:
                     _.extend(this.meta,meta);
                     //console.log('Knot.changedMeta.MERGE',this.meta);
@@ -122,6 +124,10 @@ Knot.prototype.initialize = function(path,redis,meta,metaMode){
                 case metaModes.REPLACE:
                     //console.log('metaModes.REPLACE');
                     // leave this.meta as is
+
+                    if(_.has(this.meta,'value')){
+                        this.set(this.meta.value);
+                    }
                     break;
             }
 
