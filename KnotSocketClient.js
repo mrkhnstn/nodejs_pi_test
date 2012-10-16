@@ -3,7 +3,7 @@ var util = require('util');
 var events = require('events');
 var log = require('./Log.js').log;
 var io_client = require('socket.io-client');
-var socketAddress = 'http://localhost:3333';
+var socketAddress = 'http://nodejs_pi.webbyapp.com:3333';
 var socketNamespace = 'knots';
 
 // KNOT META MODES ////////////////////////////////////////////////////////
