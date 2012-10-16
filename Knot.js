@@ -72,50 +72,6 @@ Knots.prototype.getChildren = function(path,callback){
 // replace: database params will be deleted
 metaModes = {MERGE:0,OVERWRITE:1,REPLACE:2};
 
-// KNOT TYPES ////////////////////////////////////////////////////////
-
-/*
-{
-    type: 'number' or 'int'
-    value : 50,
-    min: 0, (optional)
-    max: 100, (optional)
-}
-// for type number if min and max exist then gui should be slider
-// otherwise gui should be a plain number field (maybe increment / decrement)
-
-{
-    type: 'string',
-    value: 'asdf'
-}
-
-{
-    type: list
-    value: 0-2 // value is a number (0 for first element, 2 for last element)
-    list: ['a','b','c'] // labels to be displayed
-}
-
-{
-    type: button or trigger
-    value: 0 // this value will increment by one on each button press, listeners trigger on any change of the value
-}
-
-{   //TODO
-    type: group
-    value: 'title'
-}
-
-{   //TODO
-    type: json
-    value: {a:0,b:1}
-}
-
-label: use instead of path name in gui
-no_edit: true // if false then make gui non editable //TODO
-
-
-*/
-
 // KNOT ///////////////////////////////////////////////////////////////////
 
 exports.Knot = Knot;
@@ -214,6 +170,8 @@ Knot.prototype.setMeta = function(params){
 	}
 },
 
+
+
 Knot.prototype.set = function(value){
     //console.log(this.path,this.value, value);
 	if(value != this.value){
@@ -221,10 +179,20 @@ Knot.prototype.set = function(value){
 		this.emit('change', this.value);
 		this.redis.set(this.path,this.value);
 	}
-},
+}
+
+Knot.prototype.setInt = function(value){
+    var i = parseInt(value);
+    this.set(i == null ? 0 : i);
+}
 
 Knot.prototype.get = function(){
 	return this.value;
+}
+
+Knot.prototype.getInt = function(){
+    var i = parseInt(this.get())
+    return i == null ? 0 : i;
 }
 
 Knot.prototype.ready = function(callback){

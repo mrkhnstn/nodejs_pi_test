@@ -1,7 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="44432ed8-c899-4492-8772-76af2e4a0b7c" name="Default" comment="added basic pinging of server" />
+    <list default="true" id="44432ed8-c899-4492-8772-76af2e4a0b7c" name="Default" comment="added basic pinging of server">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/JeenodeTest4.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/KnotSocketClient.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/readme.md" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/testbed.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/JeenodeTest3.js" afterPath="$PROJECT_DIR$/JeenodeTest3.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Knot.js" afterPath="$PROJECT_DIR$/Knot.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/pi_knots.js" afterPath="$PROJECT_DIR$/pi_knots.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/public/javascripts/knots.js" afterPath="$PROJECT_DIR$/public/javascripts/knots.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/testbed_knots.js" afterPath="$PROJECT_DIR$/testbed_knots.js" />
+    </list>
     <ignored path="nodejs_pi.iws" />
     <ignored path=".idea/workspace.xml" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -19,55 +30,197 @@
   </component>
   <component name="ExecutionTargetManager" SELECTED_TARGET="default_target" />
   <component name="FileEditorManager">
-    <leaf>
-      <file leaf-file-name="JeenodeTest3.js" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/JeenodeTest3.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="45" column="33" selection-start="1402" selection-end="1402" vertical-scroll-proportion="0.029126214">
-              <folding>
-                <element signature="n#!!doc" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="pi_knots.js" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/pi_knots.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="71" column="8" selection-start="2174" selection-end="2174" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="server.js" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/server.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="70" column="57" selection-start="1800" selection-end="1800" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Knot.js" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/Knot.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="184" column="37" selection-start="4957" selection-end="4957" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="RedisBase.js" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/RedisBase.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="122" column="45" selection-start="3401" selection-end="3408" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-    </leaf>
+    <splitter split-orientation="horizontal" split-proportion="0.56276274">
+      <split-first>
+        <leaf>
+          <file leaf-file-name="testbed.js" pinned="false" current="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/testbed.js">
+              <provider selected="true" editor-type-id="text-editor">
+                <state line="28" column="18" selection-start="680" selection-end="680" vertical-scroll-proportion="0.0">
+                  <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="pi_knots.js" pinned="false" current="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/pi_knots.js">
+              <provider selected="true" editor-type-id="text-editor">
+                <state line="5" column="35" selection-start="193" selection-end="193" vertical-scroll-proportion="0.0">
+                  <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="readme.md" pinned="false" current="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/readme.md">
+              <provider selected="true" editor-type-id="text-editor">
+                <state line="61" column="70" selection-start="1398" selection-end="1398" vertical-scroll-proportion="0.0">
+                  <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="RedisBase.js" pinned="false" current="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/RedisBase.js">
+              <provider selected="true" editor-type-id="text-editor">
+                <state line="122" column="45" selection-start="3401" selection-end="3408" vertical-scroll-proportion="0.0">
+                  <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="testbed_knots.js" pinned="false" current="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/testbed_knots.js">
+              <provider selected="true" editor-type-id="text-editor">
+                <state line="20" column="39" selection-start="599" selection-end="599" vertical-scroll-proportion="0.0">
+                  <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="JeenodeTest3.js" pinned="false" current="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/JeenodeTest3.js">
+              <provider selected="true" editor-type-id="text-editor">
+                <state line="123" column="16" selection-start="4180" selection-end="4180" vertical-scroll-proportion="0.41525424">
+                  <folding>
+                    <element signature="n#!!doc" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="knots.js" pinned="false" current="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/public/javascripts/knots.js">
+              <provider selected="true" editor-type-id="text-editor">
+                <state line="58" column="30" selection-start="1688" selection-end="1688" vertical-scroll-proportion="0.0">
+                  <folding>
+                    <element signature="e#1825#2045#0" expanded="false" />
+                    <element signature="e#1857#2039#0" expanded="false" />
+                    <element signature="e#1926#2029#0" expanded="false" />
+                    <element signature="e#2326#2469#0" expanded="false" />
+                    <element signature="e#2506#2528#0" expanded="false" />
+                    <element signature="e#2719#2901#0" expanded="false" />
+                    <element signature="e#2745#2899#0" expanded="false" />
+                    <element signature="e#2934#2957#0" expanded="false" />
+                    <element signature="e#3001#3053#0" expanded="false" />
+                    <element signature="e#3096#3259#0" expanded="false" />
+                    <element signature="e#3118#3192#0" expanded="false" />
+                    <element signature="e#3198#3240#0" expanded="false" />
+                    <element signature="e#3308#3370#0" expanded="false" />
+                    <element signature="e#3484#3589#0" expanded="false" />
+                    <element signature="e#3511#3558#0" expanded="false" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+        </leaf>
+      </split-first>
+      <split-second>
+        <leaf>
+          <file leaf-file-name="Knot.js" pinned="false" current="true" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/Knot.js">
+              <provider selected="true" editor-type-id="text-editor">
+                <state line="184" column="28" selection-start="5010" selection-end="5010" vertical-scroll-proportion="0.4642857">
+                  <folding>
+                    <element signature="n#!!block;n#singleton#0" expanded="false" />
+                    <element signature="e#295#332#0" expanded="false" />
+                    <element signature="n#!!block;n#Knots#0" expanded="false" />
+                    <element signature="e#595#1126#0" expanded="false" />
+                    <element signature="e#796#808#0" expanded="false" />
+                    <element signature="e#1059#1102#0" expanded="false" />
+                    <element signature="e#1170#1223#0" expanded="false" />
+                    <element signature="e#1275#1416#0" expanded="false" />
+                    <element signature="e#1306#1385#0" expanded="false" />
+                    <element signature="e#1467#1612#0" expanded="false" />
+                    <element signature="e#1473#1501#0" expanded="false" />
+                    <element signature="e#1667#1717#0" expanded="false" />
+                    <element signature="e#1796#1811#0" expanded="false" />
+                    <element signature="n#!!block;n#Knot#0" expanded="false" />
+                    <element signature="e#2647#2695#0" expanded="false" />
+                    <element signature="e#2741#2782#0" expanded="false" />
+                    <element signature="e#2915#4138#0" expanded="false" />
+                    <element signature="e#2983#3838#0" expanded="false" />
+                    <element signature="e#3086#3694#0" expanded="false" />
+                    <element signature="e#3573#3608#0" expanded="false" />
+                    <element signature="e#3731#3833#0" expanded="false" />
+                    <element signature="e#4321#4515#0" expanded="false" />
+                    <element signature="e#4387#4513#0" expanded="false" />
+                    <element signature="e#4446#4510#0" expanded="false" />
+                    <element signature="e#4617#4721#0" expanded="false" />
+                    <element signature="e#4642#4719#0" expanded="false" />
+                    <element signature="e#4836#4937#0" expanded="false" />
+                    <element signature="e#5246#5412#0" expanded="false" />
+                    <element signature="e#5269#5343#0" expanded="false" />
+                    <element signature="e#5349#5393#0" expanded="false" />
+                    <element signature="e#5456#5508#0" expanded="false" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="app.js" pinned="false" current="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/app.js">
+              <provider selected="true" editor-type-id="text-editor">
+                <state line="13" column="4" selection-start="492" selection-end="492" vertical-scroll-proportion="0.0">
+                  <folding>
+                    <element signature="n#!!doc" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="server.js" pinned="false" current="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/server.js">
+              <provider selected="true" editor-type-id="text-editor">
+                <state line="78" column="25" selection-start="2154" selection-end="2154" vertical-scroll-proportion="0.0">
+                  <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="KnotSocketClient.js" pinned="false" current="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/KnotSocketClient.js">
+              <provider selected="true" editor-type-id="text-editor">
+                <state line="135" column="26" selection-start="3981" selection-end="3981" vertical-scroll-proportion="0.0">
+                  <folding>
+                    <element signature="e#325#340#0" expanded="false" />
+                    <element signature="n#!!block;n#Knot#0" expanded="false" />
+                    <element signature="e#3000#3032#0" expanded="false" />
+                    <element signature="e#3105#3177#0" expanded="false" />
+                    <element signature="e#3214#3387#0" expanded="false" />
+                    <element signature="e#3424#3449#0" expanded="false" />
+                    <element signature="e#3490#3671#0" expanded="false" />
+                    <element signature="e#3709#3912#0" expanded="false" />
+                    <element signature="e#4050#4076#0" expanded="false" />
+                    <element signature="e#4222#4274#0" expanded="false" />
+                    <element signature="e#4317#4482#0" expanded="false" />
+                    <element signature="e#4531#4593#0" expanded="false" />
+                    <element signature="n#!!block;n#singleton#0" expanded="false" />
+                    <element signature="e#4763#4800#0" expanded="false" />
+                    <element signature="n#!!block;n#Knots#0" expanded="false" />
+                    <element signature="e#5063#6300#0" expanded="false" />
+                    <element signature="e#5266#5495#0" expanded="false" />
+                    <element signature="e#5546#5706#0" expanded="false" />
+                    <element signature="e#5650#5700#0" expanded="false" />
+                    <element signature="e#5758#5809#0" expanded="false" />
+                    <element signature="e#5859#5912#0" expanded="false" />
+                    <element signature="e#5953#5997#0" expanded="false" />
+                    <element signature="e#6042#6090#0" expanded="false" />
+                    <element signature="e#6142#6197#0" expanded="false" />
+                    <element signature="e#6245#6296#0" expanded="false" />
+                    <element signature="e#6344#6397#0" expanded="false" />
+                    <element signature="e#6451#6483#0" expanded="false" />
+                    <element signature="e#6753#6792#0" expanded="false" />
+                    <element signature="e#6847#6953#0" expanded="false" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+        </leaf>
+      </split-second>
+    </splitter>
   </component>
   <component name="FindManager">
     <FindUsagesManager>
@@ -76,6 +229,18 @@
   </component>
   <component name="FrameworkCommandLineHistory">
     <commandsHistory>
+      <command text="node testbed_knots.js" />
+      <command text="node testbed_knots.js" />
+      <command text="sudo node testbed_knots.js" />
+      <command text="node testbed_knots.js" />
+      <command text="node testbed_knots.js" />
+      <command text="node testbed_knots.js" />
+      <command text="node testbed_knots.js" />
+      <command text="node testbed_knots.js" />
+      <command text="node testbed_knots.js" />
+      <command text="node testbed_knots.js" />
+      <command text="node testbed_knots.js" />
+      <command text="node testbed_knots.js" />
       <command text="node pi_knots.js" />
       <command text="node pi_knots.js" />
       <command text="node pi_knots.js" />
@@ -88,18 +253,6 @@
       <command text="node pi_knots.js" />
       <command text="node pi_knots.js" />
       <command text="node pi_knots.js" />
-      <command text="node pi_knots.js" />
-      <command text="node pi_knots.js" />
-      <command text="node pi_knots.js" />
-      <command text="node pi_knots.js" />
-      <command text="node pi_knots.js" />
-      <command text="node server.js" />
-      <command text="node server.js" />
-      <command text="node server.js" />
-      <command text="node pi_knots.js" />
-      <command text="node pi_knots.js" />
-      <command text="node server.js" />
-      <command text="node server.js" />
       <command text="node pi_knots.js" />
     </commandsHistory>
   </component>
@@ -112,22 +265,22 @@
   <component name="IdeDocumentHistory">
     <option name="changedFiles">
       <list>
-        <option value="$PROJECT_DIR$/Log.js" />
-        <option value="$PROJECT_DIR$/MAC.js" />
-        <option value="$PROJECT_DIR$/JeenodeTest1.js" />
-        <option value="$PROJECT_DIR$/public/javascripts/kui.js" />
         <option value="$PROJECT_DIR$/ArduinoKnotTestBencode.js" />
         <option value="$PROJECT_DIR$/JeenodeTest2.js" />
-        <option value="$PROJECT_DIR$/testbed_knots.js" />
         <option value="$PROJECT_DIR$/RedisSocketServer.js" />
-        <option value="$PROJECT_DIR$/public/javascripts/knots.js" />
         <option value="$PROJECT_DIR$/views/test.jade" />
         <option value="$PROJECT_DIR$/server.js" />
         <option value="$PROJECT_DIR$/public/javascripts/mknots.js" />
         <option value="$PROJECT_DIR$/RedisBase.js" />
-        <option value="$PROJECT_DIR$/Knot.js" />
+        <option value="$PROJECT_DIR$/JeenodeTest4.js" />
+        <option value="$PROJECT_DIR$/testbed.js" />
+        <option value="$PROJECT_DIR$/readme.md" />
+        <option value="$PROJECT_DIR$/testbed_knots.js" />
         <option value="$PROJECT_DIR$/pi_knots.js" />
+        <option value="$PROJECT_DIR$/public/javascripts/knots.js" />
         <option value="$PROJECT_DIR$/JeenodeTest3.js" />
+        <option value="$PROJECT_DIR$/KnotSocketClient.js" />
+        <option value="$PROJECT_DIR$/Knot.js" />
       </list>
     </option>
   </component>
@@ -191,6 +344,24 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="public" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="nodejs_pi" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="nodejs_pi" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="public" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="javascripts" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -289,12 +460,12 @@
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3290461" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32890365" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.12387981" sideWeight="0.6709539" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.10542963" sideWeight="0.58092177" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.12229837" sideWeight="0.6891747" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.15027158" sideWeight="0.5" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="true" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.3290461" sideWeight="0.5" order="8" side_tool="true" content_ui="combo" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Command Line Tools Console" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.41907823" sideWeight="0.9943781" order="11" side_tool="false" content_ui="tabs" x="-21" y="677" width="1657" height="249" />
+      <window_info id="Command Line Tools Console" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.3108253" sideWeight="0.9943781" order="11" side_tool="false" content_ui="tabs" x="-21" y="677" width="1657" height="249" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3290461" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -359,50 +530,10 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="1" />
+      <option name="time" value="2" />
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/app old.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/server_old.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
-          <folding>
-            <element signature="n#!!doc" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/testbed_knots.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="8" column="0" selection-start="263" selection-end="263" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/routes/index.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="7" column="2" selection-start="115" selection-end="115" vertical-scroll-proportion="0.11877828" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/views/test.jade">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="10" column="8" selection-start="488" selection-end="488" vertical-scroll-proportion="0.16968326">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/views/knots.jade">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="20" column="31" selection-start="0" selection-end="758" vertical-scroll-proportion="0.33112583">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/RedisSocketServer.js">
       <provider selected="true" editor-type-id="text-editor">
         <state line="64" column="18" selection-start="1674" selection-end="1682" vertical-scroll-proportion="0.66509986">
@@ -424,48 +555,9 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/public/javascripts/knots.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="10" column="42" selection-start="293" selection-end="293" vertical-scroll-proportion="0.22091311">
-          <folding>
-            <element signature="e#756#1072#0" expanded="false" />
-            <element signature="e#1269#1489#0" expanded="false" />
-            <element signature="e#1301#1483#0" expanded="false" />
-            <element signature="e#1370#1473#0" expanded="false" />
-            <element signature="e#1770#1913#0" expanded="false" />
-            <element signature="e#1950#1972#0" expanded="false" />
-            <element signature="e#2015#2176#0" expanded="false" />
-            <element signature="e#2040#2174#0" expanded="false" />
-            <element signature="e#2214#2396#0" expanded="false" />
-            <element signature="e#2240#2394#0" expanded="false" />
-            <element signature="e#2429#2452#0" expanded="false" />
-            <element signature="e#2496#2548#0" expanded="false" />
-            <element signature="e#2591#2754#0" expanded="false" />
-            <element signature="e#2613#2687#0" expanded="false" />
-            <element signature="e#2693#2735#0" expanded="false" />
-            <element signature="e#2803#2865#0" expanded="false" />
-            <element signature="e#3432#3494#0" expanded="false" />
-            <element signature="e#3524#3629#0" expanded="false" />
-            <element signature="e#3551#3598#0" expanded="false" />
-            <element signature="e#3997#4047#0" expanded="false" />
-            <element signature="e#4685#4809#0" expanded="false" />
-            <element signature="e#4716#4778#0" expanded="false" />
-            <element signature="e#4853#4904#0" expanded="false" />
-            <element signature="e#4959#5016#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/public/javascripts/mknots.js">
       <provider selected="true" editor-type-id="text-editor">
         <state line="90" column="28" selection-start="2470" selection-end="2470" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/server.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="70" column="57" selection-start="1800" selection-end="1800" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
@@ -477,25 +569,163 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Knot.js">
+    <entry file="file://$PROJECT_DIR$/JeenodeTest4.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="184" column="37" selection-start="4957" selection-end="4957" vertical-scroll-proportion="0.0">
+        <state line="177" column="49" selection-start="5839" selection-end="5839" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="n#!!doc" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="13" column="4" selection-start="492" selection-end="492" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="n#!!doc" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/readme.md">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="61" column="70" selection-start="1398" selection-end="1398" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/testbed.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="28" column="18" selection-start="680" selection-end="680" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="78" column="25" selection-start="2154" selection-end="2154" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/testbed_knots.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="20" column="39" selection-start="599" selection-end="599" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/pi_knots.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="71" column="8" selection-start="2174" selection-end="2174" vertical-scroll-proportion="0.0">
+        <state line="5" column="35" selection-start="193" selection-end="193" vertical-scroll-proportion="0.0">
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/public/javascripts/knots.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="58" column="30" selection-start="1688" selection-end="1688" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="e#1825#2045#0" expanded="false" />
+            <element signature="e#1857#2039#0" expanded="false" />
+            <element signature="e#1926#2029#0" expanded="false" />
+            <element signature="e#2326#2469#0" expanded="false" />
+            <element signature="e#2506#2528#0" expanded="false" />
+            <element signature="e#2719#2901#0" expanded="false" />
+            <element signature="e#2745#2899#0" expanded="false" />
+            <element signature="e#2934#2957#0" expanded="false" />
+            <element signature="e#3001#3053#0" expanded="false" />
+            <element signature="e#3096#3259#0" expanded="false" />
+            <element signature="e#3118#3192#0" expanded="false" />
+            <element signature="e#3198#3240#0" expanded="false" />
+            <element signature="e#3308#3370#0" expanded="false" />
+            <element signature="e#3484#3589#0" expanded="false" />
+            <element signature="e#3511#3558#0" expanded="false" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/JeenodeTest3.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="45" column="33" selection-start="1402" selection-end="1402" vertical-scroll-proportion="0.029126214">
+        <state line="123" column="16" selection-start="4180" selection-end="4180" vertical-scroll-proportion="0.41525424">
           <folding>
             <element signature="n#!!doc" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/KnotSocketClient.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="135" column="26" selection-start="3981" selection-end="3981" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="e#325#340#0" expanded="false" />
+            <element signature="n#!!block;n#Knot#0" expanded="false" />
+            <element signature="e#3000#3032#0" expanded="false" />
+            <element signature="e#3105#3177#0" expanded="false" />
+            <element signature="e#3214#3387#0" expanded="false" />
+            <element signature="e#3424#3449#0" expanded="false" />
+            <element signature="e#3490#3671#0" expanded="false" />
+            <element signature="e#3709#3912#0" expanded="false" />
+            <element signature="e#4050#4076#0" expanded="false" />
+            <element signature="e#4222#4274#0" expanded="false" />
+            <element signature="e#4317#4482#0" expanded="false" />
+            <element signature="e#4531#4593#0" expanded="false" />
+            <element signature="n#!!block;n#singleton#0" expanded="false" />
+            <element signature="e#4763#4800#0" expanded="false" />
+            <element signature="n#!!block;n#Knots#0" expanded="false" />
+            <element signature="e#5063#6300#0" expanded="false" />
+            <element signature="e#5266#5495#0" expanded="false" />
+            <element signature="e#5546#5706#0" expanded="false" />
+            <element signature="e#5650#5700#0" expanded="false" />
+            <element signature="e#5758#5809#0" expanded="false" />
+            <element signature="e#5859#5912#0" expanded="false" />
+            <element signature="e#5953#5997#0" expanded="false" />
+            <element signature="e#6042#6090#0" expanded="false" />
+            <element signature="e#6142#6197#0" expanded="false" />
+            <element signature="e#6245#6296#0" expanded="false" />
+            <element signature="e#6344#6397#0" expanded="false" />
+            <element signature="e#6451#6483#0" expanded="false" />
+            <element signature="e#6753#6792#0" expanded="false" />
+            <element signature="e#6847#6953#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Knot.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="184" column="28" selection-start="5010" selection-end="5010" vertical-scroll-proportion="0.4642857">
+          <folding>
+            <element signature="n#!!block;n#singleton#0" expanded="false" />
+            <element signature="e#295#332#0" expanded="false" />
+            <element signature="n#!!block;n#Knots#0" expanded="false" />
+            <element signature="e#595#1126#0" expanded="false" />
+            <element signature="e#796#808#0" expanded="false" />
+            <element signature="e#1059#1102#0" expanded="false" />
+            <element signature="e#1170#1223#0" expanded="false" />
+            <element signature="e#1275#1416#0" expanded="false" />
+            <element signature="e#1306#1385#0" expanded="false" />
+            <element signature="e#1467#1612#0" expanded="false" />
+            <element signature="e#1473#1501#0" expanded="false" />
+            <element signature="e#1667#1717#0" expanded="false" />
+            <element signature="e#1796#1811#0" expanded="false" />
+            <element signature="n#!!block;n#Knot#0" expanded="false" />
+            <element signature="e#2647#2695#0" expanded="false" />
+            <element signature="e#2741#2782#0" expanded="false" />
+            <element signature="e#2915#4138#0" expanded="false" />
+            <element signature="e#2983#3838#0" expanded="false" />
+            <element signature="e#3086#3694#0" expanded="false" />
+            <element signature="e#3573#3608#0" expanded="false" />
+            <element signature="e#3731#3833#0" expanded="false" />
+            <element signature="e#4321#4515#0" expanded="false" />
+            <element signature="e#4387#4513#0" expanded="false" />
+            <element signature="e#4446#4510#0" expanded="false" />
+            <element signature="e#4617#4721#0" expanded="false" />
+            <element signature="e#4642#4719#0" expanded="false" />
+            <element signature="e#4836#4937#0" expanded="false" />
+            <element signature="e#5246#5412#0" expanded="false" />
+            <element signature="e#5269#5343#0" expanded="false" />
+            <element signature="e#5349#5393#0" expanded="false" />
+            <element signature="e#5456#5508#0" expanded="false" />
           </folding>
         </state>
       </provider>

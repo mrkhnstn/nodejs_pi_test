@@ -87,12 +87,15 @@ function initializeKnotsModules(){
         jeenodeTest3 = require('./JeenodeTest3.js');
         jeenodeTest3.setup(deviceId+'/jeenode_test_3',isPi ? '/dev/ttyUSB0' : '/dev/tty.usbserial-AE01BQR1');
 
+        //jeenodeTest4 = require('./JeenodeTest4.js');
+        //jeenodeTest4.setup(deviceId+'/jeenode_test_4',isPi ? '/dev/ttyUSB0' : '/dev/tty.usbserial-AH01A0BU'); //< currently setup to run from one of the USB BUB on OS X
+
         //arduinoBencodeDictTest = require('./ArduinoBencodeDictTest.js');
         //arduinoBencodeDictTest.setup(deviceId+'/arduino_bencode_test','/dev/tty.usbmodemfd1241',redisBase);
     });
 }
 
-knots = require('./Knot').singleton();
+knots = require('./KnotSocketClient.js').singleton();
 knots.ready(initializeKnotsModules);
 
 function pingServer(){

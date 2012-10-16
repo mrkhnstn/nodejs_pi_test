@@ -106,42 +106,44 @@ function ackFail(){
 
 function Jeenode(id){
     this.id = id;
-    this.failedCount = knots.get(knotsPath + '/failed_' + this.id, {type:'number', value:0});
-    this.totalFailed = knots.get(knotsPath + '/total_failed_' + this.id, {type:'number', value:0});
-    this.bypassCount = knots.get(knotsPath + '/bypass_' + this.id, {type:'number', value:0});
+    this.failedCount = knots.get(knotsPath + '/failed_' + this.id, {type:'number', value:0},knots.metaModes.REPLACE);
+    this.totalFailed = knots.get(knotsPath + '/total_failed_' + this.id, {type:'number', value:0},knots.metaModes.REPLACE);
+
+    this.bypassCount = knots.get(knotsPath + '/bypass_' + this.id, {type:'number', value:0}, knots.metaModes.REPLACE);
     this.ledKnot = knots.get(knotsPath + '/led_' + this.id, {type:'boolean', default:1});
-    this.counterKnot = knots.get(knotsPath + '/counter_' + this.id, {type:'string', default:'0'},knots.metaModes.REPLACE);
-    this.isOnline = knots.get(knotsPath + '/is_online_' + this.id, {type:'boolean', value:0});
-    this.isOnline.set(0);
+    this.counterKnot = knots.get(knotsPath + '/counter_' + this.id, {type:'number', value:0},knots.metaModes.REPLACE);
+    this.isOnline = knots.get(knotsPath + '/is_online_' + this.id, {type:'boolean', value:0},knots.metaModes.REPLACE);
+    this.lastUpdate = knots.get(knotsPath + '/last_update_'+this.id, {type:'string', value:(new Date()).toISOString()});
     this.update = function(){
-        if(this.bypassCount.get() < 1){
-            var i = parseInt(this.ledKnot.get());
+        if(this.bypassCount.getInt() < 1){
+            var i =this.ledKnot.getInt();
             var bc = Bencode.encode({_D:this.id,led:i});
             //log.debug(this.id + " : update " + i);
             sp.write(bc);
             ackTimeout = setTimeout(ackFail,250);
         } else {
-            this.bypassCount.set(this.bypassCount.get() - 1);
+            this.bypassCount.setInt(this.bypassCount.getInt() - 1);
             setTimeout(updateNextJeenode,5);
         }
     }
 
     this.updateFailed = function(){
         //log.error(this.id + ' failed update')
-        this.failedCount.set(this.failedCount.get() + 1);
-        this.totalFailed.set(this.totalFailed.get() + 1);
+        this.failedCount.set(this.failedCount.getInt() + 1);
+        this.totalFailed.set(this.totalFailed.getInt() + 1);
         this.isOnline.set(0);
-        if(this.failedCount.get() > 1){
-            if(this.failedCount.get() > maxBypassCycles)
-                this.bypassCount.set(maxBypassCycles);
+        if(this.failedCount.getInt() > 1){
+            if(this.failedCount.getInt() > maxBypassCycles)
+                this.bypassCount.setInt(maxBypassCycles);
             else
-                this.bypassCount.set(this.failedCount.get());
+                this.bypassCount.setInt(this.failedCount.getInt());
         }
     }
 
     this.receiveData = function(o){
-        this.failedCount.set(0);
-        this.isOnline.set(1);
+        this.failedCount.setInt(0);
+        this.isOnline.setInt(1);
+        this.lastUpdate.set((new Date()).toISOString());
         if('_S' in o){
             var srcId = o._S;
             if(srcId != this.id){
