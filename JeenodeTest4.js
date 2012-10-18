@@ -176,7 +176,7 @@ Jeenode.prototype.initialize = function(jeenodeId,name){
         this.retryInterval.setInt(500);
         this.nextUpdateTime = new Date();
     },this));
-    this.enabled = knots.get(this.statsPath +'/enabled');
+    this.enabled = knots.get(this.statsPath +'/enabled',{type:'boolean',value:1});
 
     // trigger reset
     this.reset.ready(
