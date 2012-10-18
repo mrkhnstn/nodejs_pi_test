@@ -26,7 +26,6 @@ var jeenodes = [];
 var jeenodesInitialized = false;
 var maxAckTime;
 
-
 exports.setup = setup;
 function setup(_knotsPath,_spName) {
     knotsPath = _knotsPath;
@@ -36,7 +35,23 @@ function setup(_knotsPath,_spName) {
         spOpenedCount.set(0);
         setupSerialPort();
     });
+
+    //
+
+
     maxAckTime = knots.get(knotsPath + '/max_ack_time', {type:'number', value:100, min:100,max:2000});
+
+    serialTimeout = knots.get(knotsPath + '/serial_timeout', {type:'number',value: 20, min: 1, max: 600});
+    var devicePath = knotsPath.split("/")[0];
+    resetKnot = knots.get(devicePath + '/reset');
+
+    lastReceivedDate = new Date();
+    setInterval(function(){
+        if((new Date()).getTime() - lastReceivedDate.getTime() > serialTimeout.getInt() * 1000){
+            log.info("JeenodeTest4: no serial data received for a while. Initiating reset.");
+            resetKnot.setInt(resetKnot.getInt()+1);
+        }
+    },1000);
 
 }
 
@@ -68,6 +83,7 @@ function setupSerialPort(){
     });
 
     sp.on("data", function (data) {
+        lastReceivedDate = new Date();
         try {
             clearTimeout(ackTimeout);
             var o = Bencode.decode(data);
@@ -157,9 +173,10 @@ Jeenode.prototype.initialize = function(jeenodeId,name){
         this.totalSuccess.setInt(0);
         this.totalFailures.setInt(0);
         this.isOnline.setInt(0);
-        this.retryInterval.setInt(1000);
+        this.retryInterval.setInt(500);
         this.nextUpdateTime = new Date();
     },this));
+    this.enabled = knots.get(this.statsPath +'/enabled');
 
     // trigger reset
     this.reset.ready(
@@ -172,7 +189,7 @@ Jeenode.prototype.initialize = function(jeenodeId,name){
 }
 
 Jeenode.prototype.update = function(){
-    if(new Date() > this.nextUpdateTime){
+    if(this.enabled.getInt() == 1 && new Date() > this.nextUpdateTime){
         sendTo(this.id,this.sendData());
     } else {
         setTimeout(updateNextJeenode,5);
@@ -210,7 +227,7 @@ Jeenode.prototype.receiveUpdate = function(o){
 
     this.isOnline.set(1);
     this.totalSuccess.setInt(this.totalSuccess.getInt()+1);
-    this.retryInterval.setInt(1000);
+    this.retryInterval.setInt(500);
     this.lastUpdate.set((new Date()).toString());
 
     if('_S' in o){

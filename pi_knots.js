@@ -66,6 +66,12 @@ function initializeKnotsModules(){
             startKnot.set((new Date()).toISOString());
         });
 
+        resetKnot = knots.get(deviceId+'/reset',{type:'button'});
+        resetKnot.change(function(){
+            log.info('Reset via resetKnot. Exiting process.');
+            process.exit(1);
+        });
+
         var isPi = require('os').platform() == "linux";
         // if running on linux then consider this to be a pi
 
