@@ -345,11 +345,12 @@ GravityPlugNode.prototype.initialize = function(){
     this.x = knots.get(this.path + '/x', {type:'number', value:0});
     this.y = knots.get(this.path + '/y', {type:'number', value:0});
     this.z = knots.get(this.path + '/z', {type:'number', value:0});
+    this.side = knots.get(this.path + '/side', {type:'list', value:0, list:['top','bottom','left','right','front','rear']});
     this.sensitivity = knots.get(this.path + '/sensitivity', {type:'list',list:['low','medium','high']});
 }
 
 GravityPlugNode.prototype.receiveData = function(data){
-    // parse blink plug specific data
+
     if('x' in data){
         this.x.set(data.x);
     }
@@ -359,6 +360,43 @@ GravityPlugNode.prototype.receiveData = function(data){
     if('z' in data){
         this.z.set(data.z);
     }
+
+    var maxDir = 'x';
+
+    var dirValues = [this.x.getInt(),this.y.getInt(),this.z.getInt()];
+    var maxDirValues = [];
+    for(var i=0; i<dirValues.length; i++)
+        maxDirValues[i] = Math.abs(dirValues[i]);
+
+    var largest = 0;
+    for(var i=1; i<maxDirValues.length; i++)
+        if(maxDirValues[i] > maxDirValues[largest])
+            largest = i;
+
+    switch(largest){
+        case 0: //x
+            if(dirValues[0] >= 0){
+                this.side.set(5);
+            } else {
+                this.side.set(4);
+            }
+            break;
+        case 1: //y
+            if(dirValues[1] >= 0){
+                this.side.set(2);
+            } else {
+                this.side.set(3);
+            }
+            break;
+        case 2: //z
+            if(dirValues[2] >= 0){
+                this.side.set(0);
+            } else {
+                this.side.set(1);
+            }
+            break;
+    }
+
 }
 
 GravityPlugNode.prototype.sendData = function(){
